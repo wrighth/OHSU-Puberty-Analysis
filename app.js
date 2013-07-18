@@ -1,13 +1,26 @@
+//core dependencies
+var express = require('express');
+var http = require('http');
+var path = require('path');
 
-/**
- * Module dependencies.
- */
+//Rendering and styling
+var stylus = require('stylus');
+var nib = require('nib');
 
-var express = require('express')
-  , routes = require('./routes')
-  , user = require('./routes/user')
-  , http = require('http')
-  , path = require('path');
+//database interaction
+var neo4j = require('neo4j'); //replace with db module
+
+//sockets will come later
+//var io = require('socket.io');
+//USE XHR's FOR NOW
+
+//helpers
+var _ = require('underscore');
+var nicely = require('nicely');
+
+_.each(nicely._, function(fn, name) {
+  _.mixin({name: fn});  //mixes in nicely functions well
+});
 
 var app = express();
 
@@ -28,8 +41,9 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('/', routes.index);
-app.get('/users', user.list);
+app.get('/', function(req, res) {
+  res.render('index', { title: 'Express' });
+});
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

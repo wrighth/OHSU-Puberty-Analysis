@@ -1,0 +1,4 @@
+node_modules/*
+*.css
+config.json
+sublimeText/*

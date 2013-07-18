@@ -1,5 +1,21 @@
-extends layout
+doctype html
+html(lang="en")
+  head
+    title #{title}
+    script(src="/js/libs/jquery.min.js")
+    script(src="/js/libs/arbor.js")
+    link(type="text/css",rel="stylesheet",href="/css/style.css")
 
-block content
-  h1= title
-  p Welcome to #{title}
+  body
+    #cy(style="display: block; font-family: 'helvetica arial sans-serif'; font-size: 14px; height: 80%; left: 0px; line-height: normal; position: absolute; bottom: 0px; width: 1280px;")
+    #msg Node Information
+    input#search(autofocus)
+    button#redo Re-render
+    input#timePoint(type='range',min='0',max='2')
+    input#meanControl
+
+    script(src="/js/libs/cytoscape.min.js")
+    script(src="/js/libs/underscore.min.js")
+    script(src="/js/cyto.js")
+    script(src="/js/model.js")
+    script(src="/js/dataRequests.js")
