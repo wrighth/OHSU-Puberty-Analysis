@@ -16,9 +16,10 @@ var neo4j = require('neo4j'); //replace with db module
 
 //helpers
 var _ = require('underscore');
-var nicely = require('nicely');
+var async = require('async');
 
-_.each(nicely._, function(fn, name) {
+//mixin
+_.each(async, function(fn, name) {
   _.mixin({name: fn});  //mixes in nicely functions well
 });
 
