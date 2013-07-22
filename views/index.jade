@@ -9,10 +9,13 @@ html(lang="en")
   body
     #cy()
     #msg Node Information
-    input#search(autofocus)
+    // input#search(autofocus) //search for a specific gene
     button#redo Re-render
-    input#timePoint(type='range',min='0',max='2')
-    input#meanControl
+    select#timePoint
+        option Early Juvenile
+        option Late Juvenile
+        option Late Puberty
+    // input#meanControl  //choose the range of expression values to see
 
     script(src='/js/libs/async.min.js')
     script(src="/js/libs/cytoscape.min.js")
