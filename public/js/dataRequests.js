@@ -72,7 +72,7 @@ var readExpressionData = function readExpressionData(resText) {
   };
 };
 
-/****** RGDMap data retrieval and parsing ******/
+/****** RGDMap parsing ******/
 //resText => rgdMap
 var readRGDData = function readRGDData(resText) {
   var rgdMap = {};
@@ -95,7 +95,7 @@ var readRGDData = function readRGDData(resText) {
   return rgdMap;
 };
 
-  /****** Network data retrieval and creation ******/
+  /****** Network creation ******/
 var readNetworkData = function readNetworkData(resText, rgdMap, eData) {
   var lines = resText.replace(/\r/g,"") //removes carriage returns
     .split(lineSplit);
@@ -152,14 +152,8 @@ async.waterfall([
       console.log('rgdMap ready');
       callback(null, rgdMap);
     })
-
-    .fail(function() {
-      console.error('ERR in RgdMap func');
-      callback(new Error('ERR in RgdMap func'), rgdMap);
-    });
   },
   function reqExpressions(rgdMap, callback) {
-    var err = null;
     var eData = {};
     var eStats = {};
 
@@ -171,19 +165,14 @@ async.waterfall([
       eData = expReturnVals.eData;
       eStats = expReturnVals.eStats;
 
-      expData = eData;
+      expData = eData; //GLOBALS
       expStats = eStats;
 
-      if(eData) {}
-        //eStats = processExpressionNumbers(eData);
-      else {
-        err = new Error('eData did not give expected results');
-      }
     }, 'text')
 
     .done(function() {
       console.log('read expressions successfully' + eData + rgdMap + eStats);
-      callback(err, rgdMap, eData, eStats);
+      callback(null, rgdMap, eData, eStats);
     });
   },
   function reqNetworkData(rgdMap, eData, eStats, callback) {
@@ -193,15 +182,14 @@ async.waterfall([
 
     $.get(urlObj.networkData, function setUpCytoInfo(resText) {
       cInfo = readNetworkData(resText, rgdMap, eData, eStats);
+      cytoInfo = cInfo; //GLOBAL
     }, 'text')
 
     .done(function() {
       console.log('network stuff done successfully');
 
-      cytoInfo = cInfo;
-      callback(null, rgdMap, eData, eStats, cInfo)
-    })
-
+      callback(null, rgdMap, eData, eStats, cInfo);
+    });
   }
 ], function dataReady(err, rgdMap, eData, eStats, cInfo) {
   console.log(err, rgdMap, eData, eStats, cInfo);
