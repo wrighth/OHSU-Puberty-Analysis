@@ -1,21 +1,29 @@
-var rgdMap = {};
-var URL = 'http://cs.catlin.edu/~khanh/cytoscape/';
-var cytoInfo = {};
-var dataURL = URL + 'RGD_ORTHOLOGS.txt';
-var expURL = URL + 'test_levels.txt';
+//ALL FILES HAVE LINES DELIMITED BY '\n' and DATA POINTS DELIMITED BY '_'
 var lineSplit = /\n/;
 var _Split = '_';
-var pipeSplit = /\|/;
+
+var URL = 'http://cs.catlin.edu:8000/data/';
+var urlObj = {
+  rgdData: URL + 'RGD_ORTHOLOGS.txt',
+  networkData: URL + 'basakData.sif',
+  expressionData: URL + 'test_levels.txt'
+}
+
 var expData = {};
 var expStats = {};
+var cytoInfo = {};
 
-$.get(expURL, {}, function(resText) {
-  var data = resText.split(pipeSplit);
+//resText of expressions => eData,eStats
+var readExpressionData = function readExpressionData(resText) {
+  var data = resText.split(lineSplit);
+  var eData = {};
+  var eStats = {};
+
+  var valList = {ej:[],lj:[],lp:[]};
   var mean = {ej:0,lj:0,lp:0};
   var numElems = data.length;
 
-  var valList = {ej:[],lj:[],lp:[]};
-
+  //FINDS MAX,MIN,AVG
   _.each(data, function(line) {
     var pts = line.split(_Split);
 
@@ -27,7 +35,7 @@ $.get(expURL, {}, function(resText) {
     valList.lj.push(pts[2]);
     valList.lp.push(pts[3]);
 
-    expData[pts[0].toLowerCase()] = {
+    eData[pts[0].toLowerCase()] = {
       ej: pts[1],
       lj: pts[2],
       lp: pts[3]
@@ -40,10 +48,11 @@ $.get(expURL, {}, function(resText) {
 
   //calculate the averages
   _.each(mean, function(val, key) {
+
     mean[key] /= numElems;
   });
 
-  expStats = {
+  eStats = {
     max:{
       ej:_.max(valList.ej),
       lj:_.max(valList.lj),
@@ -56,15 +65,18 @@ $.get(expURL, {}, function(resText) {
     },
     mean:mean
   };
-})
 
-.done(function() {
-  console.log('Expression values read.');
-});
+  return {
+    eData : eData,
+    eStats : eStats
+  };
+};
 
 /****** RGDMap data retrieval and parsing ******/
-$.get(dataURL, {}, function(responseText) { 
-  var data = responseText.split(lineSplit);    //split by new line
+//resText => rgdMap
+var readRGDData = function readRGDData(resText) {
+  var rgdMap = {};
+  var data = resText.split(lineSplit);    //split by new line
   data.pop(); //empty string removal
 
   _.each(data, function(line) {
@@ -79,63 +91,125 @@ $.get(dataURL, {}, function(responseText) {
 
     rgdMap[dataArr[0]] = new RGD(dataArr);  //new rgd's with rat as key
   });
-},'text')
 
-.done(function() {
-  console.log('rgdMap ready');
-})
+  return rgdMap;
+};
 
-.done( function() {
-  var networkURL = URL + 'basakData.sif';
+  /****** Network data retrieval and creation ******/
+var readNetworkData = function readNetworkData(resText, rgdMap, eData) {
+  var lines = resText.replace(/\r/g,"") //removes carriage returns
+    .split(lineSplit);
+
   var cytoNodes = [];
   var cytoLinks = [];
   var nodesObj = {};
 
-  /****** Network data retrieval and creation ******/
-  $.get(networkURL, {}, function(responseText) {
-    var lines = responseText.replace(/\r/g,"") //removes carriage returns
-      .split(lineSplit);
+  _.each(lines, function(line) {
+    //lowercases array data from splitting
+    var data = lowerCase(line.split(_Split));
 
-    _.each(lines, function(line) {
-      //lowercases array data from splitting
-      var data = lowerCase(line.split(_Split));
+    var startNodeId = data[0];
+    var endNodeId = data[2];
+    var startNodeInfo = rgdMap[startNodeId];
+    var endNodeInfo = rgdMap[endNodeId];
 
-      var startNodeId = data[0];
-      var endNodeId = data[2];
-      var startNodeInfo = rgdMap[startNodeId];
-      var endNodeInfo = rgdMap[endNodeId];
+    if(eData[startNodeId]) {
+      var startNode = new CytoNode(startNodeId, startNodeInfo, eData[startNodeId] , 'gene');
+      nodesObj[startNodeId] = startNode;
+    }
+    if(eData[endNodeId]) {
+      var endNode = new CytoNode(endNodeId, endNodeInfo, eData[endNodeId], 'gene');
+      nodesObj[endNodeId] = endNode;
+    }
+    if(eData[startNodeId] && eData[endNodeId])
+    cytoLinks.push(new CytoLink(startNodeId, endNodeId, data[1].toLowerCase()));
+  });
 
-      if(expData[startNodeId]) {
-        var startNode = new CytoNode(startNodeId, startNodeInfo, expData[startNodeId] , 'gene');
-        nodesObj[startNodeId] = startNode;
-      }
-      if(expData[endNodeId]) {
-        var endNode = new CytoNode(endNodeId, endNodeInfo, (expData[endNodeId] || null), 'gene');
-        nodesObj[endNodeId] = endNode;
-      }
-      if(expData[startNodeId] && expData[endNodeId])
-      cytoLinks.push(new CytoLink(startNodeId, endNodeId, data[1].toLowerCase()));
+  console.log('created cytoLinks');
+    _.each(nodesObj, function(cytoNode) {
+      cytoNodes.push(cytoNode);
     });
 
-  },'text')
+  console.log('registered ' +cytoNodes.length+ ' cytoNodes');
 
-  .done(function() {
-      console.log('created cytoLinks');
-      _.each(nodesObj, function(cytoNode) {
-        cytoNodes.push(cytoNode);
-      });
-      cytoInfo = {
-        nodes : cytoNodes,
-        links : cytoLinks
-      };
-  }, 
+  return {
+    nodes : cytoNodes,
+    links : cytoLinks
+  };
+};
 
-  function() {
-    console.log('registered ' +cytoNodes.length+ ' cytoNodes');
-  }, 
+//all requests for data
+async.waterfall([
+  function reqRGDData(callback) {
+    var rgdMap = {};
 
-  //render the cytoscape network when finished with reqs
-  function() {
-    renderCyto(cytoInfo);
-  });
+    $.get(urlObj.rgdData, function passRgdData(resText) {
+      console.log(rgdMap);
+      rgdMap = readRGDData(resText);      //returns rgdMap
+    }, 'text')
+
+    .done(function() {
+      console.log('rgdMap ready');
+      callback(null, rgdMap);
+    })
+
+    .fail(function() {
+      console.error('ERR in RgdMap func');
+      callback(new Error('ERR in RgdMap func'), rgdMap);
+    });
+  },
+  function reqExpressions(rgdMap, callback) {
+    var err = null;
+    var eData = {};
+    var eStats = {};
+
+    console.log(rgdMap);
+    console.log(callback);
+
+    $.get(urlObj.expressionData, function(resText) {
+      var expReturnVals = readExpressionData(resText, rgdMap);
+      eData = expReturnVals.eData;
+      eStats = expReturnVals.eStats;
+
+      expData = eData;
+      expStats = eStats;
+
+      if(eData) {}
+        //eStats = processExpressionNumbers(eData);
+      else {
+        err = new Error('eData did not give expected results');
+      }
+    }, 'text')
+
+    .done(function() {
+      console.log('read expressions successfully' + eData + rgdMap + eStats);
+      callback(err, rgdMap, eData, eStats);
+    });
+  },
+  function reqNetworkData(rgdMap, eData, eStats, callback) {
+    console.log(rgdMap,eData,eStats,callback);
+
+    var cInfo = {};
+
+    $.get(urlObj.networkData, function setUpCytoInfo(resText) {
+      cInfo = readNetworkData(resText, rgdMap, eData, eStats);
+    }, 'text')
+
+    .done(function() {
+      console.log('network stuff done successfully');
+
+      cytoInfo = cInfo;
+      callback(null, rgdMap, eData, eStats, cInfo)
+    })
+
+  }
+], function dataReady(err, rgdMap, eData, eStats, cInfo) {
+  console.log(err, rgdMap, eData, eStats, cInfo);
+
+  if(err) {
+    console.error('ERR: '+err.message);
+  }
+  console.log('all data loaded.')
+
+  renderCyto(cytoInfo);
 });
