@@ -144,7 +144,6 @@ async.waterfall([
     var rgdMap = {};
 
     $.get(urlObj.rgdData, function passRgdData(resText) {
-      console.log(rgdMap);
       rgdMap = readRGDData(resText);      //returns rgdMap
     }, 'text')
 
@@ -157,9 +156,6 @@ async.waterfall([
     var eData = {};
     var eStats = {};
 
-    console.log(rgdMap);
-    console.log(callback);
-
     $.get(urlObj.expressionData, function(resText) {
       var expReturnVals = readExpressionData(resText, rgdMap);
       eData = expReturnVals.eData;
@@ -171,12 +167,11 @@ async.waterfall([
     }, 'text')
 
     .done(function() {
-      console.log('read expressions successfully' + eData + rgdMap + eStats);
+      console.log('read expressions successfully');
       callback(null, rgdMap, eData, eStats);
     });
   },
   function reqNetworkData(rgdMap, eData, eStats, callback) {
-    console.log(rgdMap,eData,eStats,callback);
 
     var cInfo = {};
 
@@ -191,7 +186,7 @@ async.waterfall([
       callback(null, rgdMap, eData, eStats, cInfo);
     });
   }
-], function dataReady(err, rgdMap, eData, eStats, cInfo) {
+], function(err, rgdMap, eData, eStats, cInfo) {
   console.log(err, rgdMap, eData, eStats, cInfo);
 
   if(err) {
