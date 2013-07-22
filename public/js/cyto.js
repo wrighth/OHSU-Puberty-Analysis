@@ -153,7 +153,7 @@ var renderBtn = $$('#redo');
 renderBtn.addEventListener('click', function() {
   var allEles = cy.$('*');
   cy.remove(allEles);
-  setTimeout(function() {cy.add(allEles);}, 3000);
+  setTimeout(function() {cy.add(allEles); cy.layout(arborOptions);}, 3000);
 });
 
 //SEARCH FUNCTIONALITY
