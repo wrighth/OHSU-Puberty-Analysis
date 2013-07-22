@@ -12,6 +12,7 @@ var urlObj = {
 var expData = {};
 var expStats = {};
 var cytoInfo = {};
+var rgdMap = {};
 
 //resText of expressions => eData,eStats
 var readExpressionData = function readExpressionData(resText) {
@@ -71,8 +72,6 @@ var readExpressionData = function readExpressionData(resText) {
     eStats : eStats
   };
 };
-
-/****** RGDMap parsing ******/
 //resText => rgdMap
 var readRGDData = function readRGDData(resText) {
   var rgdMap = {};
@@ -96,6 +95,7 @@ var readRGDData = function readRGDData(resText) {
 };
 
   /****** Network creation ******/
+// => cytoInfo
 var readNetworkData = function readNetworkData(resText, rgdMap, eData) {
   var lines = resText.replace(/\r/g,"") //removes carriage returns
     .split(lineSplit);
@@ -141,7 +141,6 @@ var readNetworkData = function readNetworkData(resText, rgdMap, eData) {
 //all requests for data
 async.waterfall([
   function reqRGDData(callback) {
-    var rgdMap = {};
 
     $.get(urlObj.rgdData, function passRgdData(resText) {
       rgdMap = readRGDData(resText);      //returns rgdMap
