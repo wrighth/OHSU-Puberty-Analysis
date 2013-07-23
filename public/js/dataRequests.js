@@ -2,7 +2,7 @@
 var lineSplit = /\n/;
 var _Split = '_';
 
-var URL = 'http://cs.catlin.edu:8000/data/';
+var URL = 'http://129.95.40.226:8000:8000/data/';
 var urlObj = {
   rgdData: URL + 'RGD_ORTHOLOGS.txt',
   networkData: URL + 'basakData.sif',
