@@ -61,7 +61,7 @@ var CytoNode = function CytoNode(id, nodeInfo, expression, type) {
     nodeInfo : nodeInfo,
     type : type,
     expression: expression,
-    color: processExpression(expression.ej)
+    color: processExpression(expression.ej, 'ej')
   };
 };
 
@@ -104,7 +104,7 @@ var randColor = function randColor(decimal) {
 };
 
 var processExpression = function processExpression(val, time, options) {
-  time = (expData[time])? time : 'ej';
+  //time = (expData[time])? time : 'ej';
 
   var decimal = (val - expStats.min[time])/(expStats.max[time] - expStats.min[time]);
   console.log('\t'+val+' --> '+decimal);
