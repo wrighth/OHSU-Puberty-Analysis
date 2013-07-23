@@ -11,9 +11,9 @@ html(lang="en")
     #msg Node Information
     // input#search(autofocus) //search for a specific gene
     button#redo Re-render
-    input(type="radio",name="timePoint",data-time="ej",selected=true) Early Juvenile
-    input(type="radio",name="timePoint",data-time="lj") Late Juvenile
-    input(type="radio",name="timePoint",data-time="lp") Late Puberty
+    .timePoint.timeSelect(data-time="ej") Early Juvenile
+    .timePoint(data-time="lj") Late Juvenile
+    .timePoint(data-time="lp") Late Puberty
     // input#meanControl  //choose the range of expression values to see
 
     script(src='/js/libs/async.min.js')
