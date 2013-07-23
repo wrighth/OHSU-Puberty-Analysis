@@ -2,11 +2,11 @@
 var lineSplit = /\n/;
 var _Split = '_';
 
-var URL = 'http://129.95.40.226:8000/data/';
+var URL = 'http://129.95.40.226:8000/';
 var urlObj = {
-  rgdData: URL + 'RGD_ORTHOLOGS.txt',
-  networkData: URL + 'basakData.sif',
-  expressionData: URL + 'test_levels.txt'
+  rgdData: URL + 'data/RGD_ORTHOLOGS.txt',
+  networkData: URL + 'data/basakData.sif',
+  expressionData: URL + 'data/test_levels.txt'
 }
 
 var expData = {};
