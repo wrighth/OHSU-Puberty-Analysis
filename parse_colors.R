@@ -1,4 +1,4 @@
-library("gplots");
+suppressWarnings(suppressMessages(library(gplots)));
 retcols <- function(expr, nbreaks)
 {
 	rg <- greenred(nbreaks);
@@ -24,8 +24,8 @@ retcols <- function(expr, nbreaks)
 	return(cbind(ret, tolower(expr[,2])));
 }
 args <- commandArgs(TRUE)
-print(args)
 expr <- read.table(args[1], sep=",", header=FALSE, colClasses=c("numeric", "character"));
-write.table(retcols(expr, as.numeric(args[2])), file=args[3], sep="_", row.names=FALSE, col.names=FALSE, quote=FALSE);
+write.table(retcols(expr, as.numeric(args[2])), sep="_", row.names=FALSE, col.names=FALSE, quote=FALSE);
+
 q("no");
 
