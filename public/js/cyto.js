@@ -1,4 +1,5 @@
 var $$ = function(sel, el) {return (el || document).querySelector(sel)};
+var $$$ = function(sel, el) {return (el || document).querySelectorAll(sel)};
 var msgBox = $$('#msg');
 var geneInfoLink = 'http://www.ncbi.nlm.nih.gov/gene/';
 
@@ -154,6 +155,21 @@ renderBtn.addEventListener('click', function() {
   var allEles = cy.$('*');
   cy.remove(allEles);
   setTimeout(function() {cy.add(allEles); cy.layout(arborOptions);}, 3000);
+});
+
+//Buttons for timePoints
+var btns = $$$('.timePoint');
+_.each(btns, function(btn) {
+  btn.addEventListener('click', function(event) {
+    var target = event.target;
+
+    if(!target.classList.contains('timeSelect')) {
+      $$('.timeSelect').classList.remove('timeSelect');
+      target.classList.add('timeSelect');
+
+      //Other stuff w/ node and req, etc.
+    }
+  });
 });
 
 //SEARCH FUNCTIONALITY
