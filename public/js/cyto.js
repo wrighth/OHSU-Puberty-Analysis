@@ -7,13 +7,13 @@ var arborOptions = {
   liveUpdate: true, // whether to show the layout as it's running
   ready: undefined, // callback on layoutready 
   stop: undefined, // callback on layoutstop
-  maxSimulationTime: 6000, // max length in ms to run the layout
+  maxSimulationTime: 3000, // max length in ms to run the layout
   fit: true, // fit to viewport
-  padding: [ 10, 10, 10, 10 ], // top, right, bottom, left
+  padding: [ 50, 50, 50, 50 ], // top, right, bottom, left
   ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
 
   // forces used by arbor (use arbor default on undefined)
-  repulsion: 1000,
+  repulsion: 400,
   stiffness: 200,
   friction: undefined,
   gravity: true,
