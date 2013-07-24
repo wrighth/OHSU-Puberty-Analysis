@@ -107,7 +107,6 @@ var processExpression = function processExpression(val, time, options) {
   //time = (expData[time])? time : 'ej';
 
   var decimal = (val - expStats.min[time])/(expStats.max[time] - expStats.min[time]);
-  //console.log('\t'+val+' --> '+decimal);
 
   return randColor(decimal);
 };
