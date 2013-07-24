@@ -10,6 +10,7 @@ var nib = require('nib');
 
 //database interaction
 var neo4j = require('neo4j'); //replace with db module
+var redis = require('redis');
 
 //sockets will come later
 //var io = require('socket.io');
@@ -29,6 +30,7 @@ _.each(async, function(fn, name) {
 });
 
 var app = express();
+var cli = redis.createClient();
 
 app.configure(function(){
   app.set('port', process.env.PORT || 8000);
@@ -51,7 +53,7 @@ app.get('/', function(req, res) {
   res.render('index', { title: 'Express' });
 });
 
-app.get('/color', function(req, res) {
+app.get('/resources/color', function(req, res) {
   var expInfo = req.query.expInfo;
   if(!expInfo) {
     res.send('ERR: no expInfo!');
@@ -77,6 +79,35 @@ var colorsFromR = function colorsFromR(readFrom, breaks) {
     sys.print('stdout: ' + stdout);
   });
 };
+
+//returns the rgd Info for the rgdKeys provided in the req
+app.post('/resources/rgd', function(req, res) {
+  var rgdReq = req.body.rgdReq || req.body.rgdRequest;
+  var rgdInfo = {};
+
+  if(!(rgdReq && _.isArray(rgdReq))) {
+    res.send('Error! That is not a valid request. Please give me an array of rgdKeys.');
+  }
+
+  //get each key from redis
+  _.each(rgdReq, function(rgdKey) {
+    if(!rgdInfo[rgdKey] && cli.exists(rgdKey)) {
+      rgdInfo[rgdKey] = JSON.parse(cli.get(rgdKey)); //parsed JSON of the rgdInfo
+    }
+    else {
+      rgdInfo[rgdKey] = {
+        symbol: rgdKey,
+        rat: null,
+        human: null,
+        mouse: null
+      };
+    }
+  });
+
+  rgdInfo = JSON.stringify(rgdInfo);
+
+  res.send(rgdInfo);
+});
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
