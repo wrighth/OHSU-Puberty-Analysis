@@ -2,6 +2,7 @@
 var express = require('express');
 var http = require('http');
 var path = require('path');
+var fs = require('fs');
 
 //Rendering and styling
 var stylus = require('stylus');
@@ -17,6 +18,10 @@ var neo4j = require('neo4j'); //replace with db module
 //helpers
 var _ = require('underscore');
 var async = require('async');
+
+//child processes - calling R from node
+var sys = require('util');
+var exec = require('child_process').exec;
 
 //mixin
 _.each(async, function(fn, name) {
@@ -45,6 +50,33 @@ app.configure('development', function(){
 app.get('/', function(req, res) {
   res.render('index', { title: 'Express' });
 });
+
+app.get('/color', function(req, res) {
+  var expInfo = req.query.expInfo;
+  if(!expInfo) {
+    res.send('ERR: no expInfo!');
+  }
+
+  if(_.isObject(expInfo)) {
+    //write file using fs
+  }
+  //pass file to colors
+  //res.send colors obj
+
+  res.send(expInfo);
+});
+
+var colorsFromR = function colorsFromR(readFrom, breaks) {
+  var readFrom = readFrom || "exps.txt";
+  var breaks = breaks || 32;
+  var command = "R --slave --args "+readFrom+" "+breaks+" < parse_colors.R";
+
+  var child = exec(command, function (err, stdout, stderr) {
+    var data = stderr.split(/\n/);
+
+    sys.print('stdout: ' + stdout);
+  });
+};
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
