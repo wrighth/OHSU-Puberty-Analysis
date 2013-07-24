@@ -51,10 +51,10 @@ var Human = function Human(humanArr) {
   this.hgncId = humanArr[4];
 };
 
-fs.readFile('~/ohsu/public/data/RGD_ORTHOLOGS.txt', function(err, file) {
+fs.readFile('/home/hamzah/ohsu/public/data/RGD_ORTHOLOGS.txt', {encoding:'utf-8'}, function(err, file) {
   var rgdMap = {};
   var lines = file.split(/\n/);
-  //lines.pop(); //do I need this
+  var i = 0;
 
   _.each(lines, function(line) {
     var lineInfo = lowerCase(line.split("_"));
@@ -65,34 +65,9 @@ fs.readFile('~/ohsu/public/data/RGD_ORTHOLOGS.txt', function(err, file) {
 
     var key = lineInfo[0];
 
-    rgdMap[lineInfo[0]] = new RGD(lineInfo);
+    var rgdInfo = rgdMap[key] = JSON.stringify(new RGD(lineInfo));
+    //cli.set(key, rgdInfo);
+    
+    console.log(key, cli.get(key));
   });
-
-  console.log(rgdMap);
 });
-
-/*var readRGDData = function readRGDData(resText) {
-  var rgdMap = {};
-  var data = resText.split(lineSplit);    //split by new line
-  data.pop(); //empty string removal
-
-  _.each(data, function(line) {
-    //lowercases array data from splitting
-    var dataArr = line.split(_Split);
-    if(dataArr.length !== 13) {
-      throw new Error('Error w/ data length. Is really ' + dataArr.length + ".");
-    }
-    dataArr = lowerCase(dataArr);
-
-    var key = dataArr[0] || dataArr[3] || dataArr[7]; //defaults to human or mouse if rat does not exist
-
-    rgdMap[dataArr[0]] = new RGD(dataArr);  //new rgd's with rat as key
-  });
-
-  return rgdMap;
-};
-
-$.get(urlObj.rgdData, function passRgdData(resText) {
-  var rgdMap = readRGDData(resText);      //returns rgdMap
-}, 'text');*/
-

@@ -76,7 +76,7 @@ var readExpressionData = function readExpressionData(resText) {
 var readRGDData = function readRGDData(resText) {
   var rgdMap = {};
   var data = resText.split(lineSplit);    //split by new line
-  data.pop(); //empty string removal
+  //data.pop(); //fixed file
 
   _.each(data, function(line) {
     //lowercases array data from splitting
