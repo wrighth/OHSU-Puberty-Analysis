@@ -152,9 +152,21 @@ var renderCyto = function renderCyto(cytoVar) {
 //RERENDERING
 var renderBtn = $$('#redo');
 renderBtn.addEventListener('click', function() {
-  var allEles = cy.$('*');
-  cy.remove(allEles);
-  setTimeout(function() {cy.add(allEles); cy.layout(arborOptions);}, 3000);
+  var allNodes = cy.$('node');
+  
+  _.each(allNodes, function changeColor(node) {
+    var nodeName = node.data('id');
+
+    if(expData[nodeName]) {
+      var oldColor = node.css('background-color');
+      var color = processExpression(expData[nodeName]['lj'], 'lj');
+      console.log(oldColor+' --> '+color);
+      node.css('background-color', color);
+    }
+    else {
+      console.log(nodeName);
+    }
+  });
 });
 
 //Buttons for timePoints
@@ -162,12 +174,17 @@ var btns = $$$('.timePoint');
 _.each(btns, function(btn) {
   btn.addEventListener('click', function(event) {
     var target = event.target;
+    //var expInfo = target.dataset.time;
 
     if(!target.classList.contains('timeSelect')) {
+
+      /*$.get(URL+'color', {expInfo:expInfo}, function(resText) {
+        console.log(resText);
+      }, 'text');
+
+      //changing the color should be the last thing to do*/
       $$('.timeSelect').classList.remove('timeSelect');
       target.classList.add('timeSelect');
-
-      //Other stuff w/ node and req, etc.
     }
   });
 });
