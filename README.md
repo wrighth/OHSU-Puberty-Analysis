@@ -16,6 +16,7 @@ Priorities
   2. hierarchical/organic layouts
   3. hover windows?
   4. NEW USER INTERFACE
+  5. New file format?
 
   search within network
   BETTER OBJECT CREATION - CREATE SCHEMA
