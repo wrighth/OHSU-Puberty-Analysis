@@ -15,8 +15,6 @@ var expStats = {};
 var cytoInfo = {};
 var rgdMap = {};
 
-var CHECKTHISVAR;
-
 //resText of expressions => eData,eStats
 var readExpressionData = function readExpressionData(resText) {
   var data = resText.split(lineSplit);
@@ -75,19 +73,6 @@ var readExpressionData = function readExpressionData(resText) {
     eStats : eStats
   };
 };
-//resText => rgdMap
-/*var getRgdInfo = function getRgdInfo(rgdKeys) {
-  var rgdKeys = rgdKeys || ['a2m','a1bg'];
-  var keyMap = {};
-
-  $.post(urlObj.rgdData, {rgdReq: rgdKeys}, function queryForRgdInfo(resText) {
-    keyMap = JSON.parse(resText);
-    console.log(keyMap['a2m'], keyMap['a1bg']);
-    console.log('rgdMap ready');
-  }, 'text');
-
-  return keyMap;
-};*/
   /****** Network creation ******/
 // networkInfo [{},{},{}] => cytoInfo
 var readNetworkData = function readNetworkData(networkInfo, rMap, eData) {
@@ -155,7 +140,6 @@ async.waterfall([
     }, 'text')
 
     .done(function() {
-      console.log(networkInfo, rgdKeys);
       callback(null, networkInfo, rgdKeys);
     });
   },
@@ -166,16 +150,12 @@ async.waterfall([
     var rMap = {};
 
     $.post(urlObj.rgdData, {rgdReq: rgdKeys}, function queryForRgdInfo(resText) {
-      CHECKTHISVAR = resText;
       rMap = JSON.parse(resText);
-      //console.log(rMap);
     }, 'text')
 
     .done(function() {
-      console.log('GFAP GENE __________'+rMap['gfap']);
       console.log('rgdMap ready');
       rgdMap = rMap;    //set rgdMap to the map
-      //console.log(rMap);
 
       callback(null, networkInfo, rMap);
     });
@@ -212,8 +192,6 @@ async.waterfall([
 
   //waterfall callback
   function completeReqs(err, rMap, eData, eStats, cInfo) {
-    console.log(err, rMap, eData, eStats, cInfo);
-
     if(err) {
       console.error('ERR: '+err.message);
     }
@@ -222,54 +200,3 @@ async.waterfall([
     renderCyto(cInfo);
   }
 );
-
-
-
-/*
-//all requests for data
-async.waterfall([
-  function reqExpressions(callback) {
-    var eData = {};
-    var eStats = {};
-
-    $.get(urlObj.expressionData, function(resText) {
-      var expReturnVals = readExpressionData(resText);
-      eData = expReturnVals.eData;
-      eStats = expReturnVals.eStats;
-
-      expData = eData; //GLOBALS
-      expStats = eStats;
-
-    }, 'text')
-
-    .done(function() {
-      console.log('read expressions successfully');
-      callback(null, eData, eStats);
-    });
-  },
-  function reqNetworkData(eData, eStats, callback) {
-
-    var cInfo = {};
-
-    $.get(urlObj.networkData, function setUpCytoInfo(resText) {
-      cInfo = readNetworkData(resText, rgdMap, eData);
-      cytoInfo = cInfo; //GLOBAL
-    }, 'text')
-
-    .done(function() {
-      console.log('network stuff done successfully');
-
-      callback(null, rgdMap, eData, eStats, cInfo);
-    });
-  }
-], function(err, rgdMap, eData, eStats, cInfo) {
-  console.log(err, rgdMap, eData, eStats, cInfo);
-
-  if(err) {
-    console.error('ERR: '+err.message);
-  }
-  console.log('all data loaded.')
-
-  renderCyto(cytoInfo);
-});*/
-
