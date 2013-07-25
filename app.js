@@ -82,9 +82,9 @@ var colorsFromR = function colorsFromR(readFrom, breaks) {
 
 //returns the rgd Info for the rgdKeys provided in the req
 app.post('/resources/rgd', function(req, res) {
-  var rgdReq = req.body.rgdReq || req.body.rgdRequest;
+  var rgdReq = req.body.rgdReq || req.body.rgdQuery || req.body.rgdRequest;
   rgdReq = _.uniq(rgdReq);
-  var rgdInfo = {};
+  var rgdMap = {};
 
   if(!(rgdReq && _.isArray(rgdReq))) {
     res.send('Error! That is not a valid request. Please give me an array of rgdKeys.');
@@ -106,7 +106,7 @@ app.post('/resources/rgd', function(req, res) {
                   else {
                     console.error('ERR: '+err.message);
                   }
-                }); //parsed JSON of the rgdInfo
+                }); //parsed JSON of the rgdMap
               }
               else if(!err) {
                 callback(null, {
@@ -123,25 +123,19 @@ app.post('/resources/rgd', function(req, res) {
             });
           },
           function (rgdObj, callback) {
-            rgdInfo[rgdKey] = rgdObj;
-            if(Object.keys(rgdInfo).length === rgdReq.length) {
+            rgdMap[rgdKey] = rgdObj;
+            if(Object.keys(rgdMap).length === rgdReq.length) {
               nextFunc(null); //move to the next part
             }
           }
         ]);
       });
     },
-    function rgdStringify(callback) {
-      rgdInfo = JSON.stringify(rgdInfo);
-      callback(null);
+    function sendResJson(callback) {
+      res.json(rgdMap);
     }
   ], function sendRes(err) {
-    if(!err) {
-      res.json(rgdInfo);
-    }
-    else {
-      console.error('ERR: '+err.message);
-    }
+    console.error('ERR: '+err.message);
   });
 });
 

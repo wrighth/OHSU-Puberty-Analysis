@@ -4,15 +4,18 @@ var _Split = '_';
 
 var URL = 'http://129.95.40.226:8000/';
 var urlObj = {
-  rgdData: URL + 'data/RGD_ORTHOLOGS.txt',
+  rgdData: URL + 'resources/rgd',
   networkData: URL + 'data/basakData.sif',
   expressionData: URL + 'data/test_levels.txt'
 }
 
+//GLOBAL VARIABLES
 var expData = {};
 var expStats = {};
 var cytoInfo = {};
 var rgdMap = {};
+
+var CHECKTHISVAR;
 
 //resText of expressions => eData,eStats
 var readExpressionData = function readExpressionData(resText) {
@@ -73,45 +76,33 @@ var readExpressionData = function readExpressionData(resText) {
   };
 };
 //resText => rgdMap
-var readRGDData = function readRGDData(resText) {
-  var rgdMap = {};
-  var data = resText.split(lineSplit);    //split by new line
-  //data.pop(); //fixed file
+/*var getRgdInfo = function getRgdInfo(rgdKeys) {
+  var rgdKeys = rgdKeys || ['a2m','a1bg'];
+  var keyMap = {};
 
-  _.each(data, function(line) {
-    //lowercases array data from splitting
-    var dataArr = line.split(_Split);
-    if(dataArr.length !== 13) {
-      throw new Error('Error w/ data length. Is really ' + dataArr.length + ".");
-    }
-    dataArr = lowerCase(dataArr);
+  $.post(urlObj.rgdData, {rgdReq: rgdKeys}, function queryForRgdInfo(resText) {
+    keyMap = JSON.parse(resText);
+    console.log(keyMap['a2m'], keyMap['a1bg']);
+    console.log('rgdMap ready');
+  }, 'text');
 
-    var key = dataArr[0] || dataArr[3] || dataArr[7]; //defaults to human or mouse if rat does not exist
-
-    rgdMap[dataArr[0]] = new RGD(dataArr);  //new rgd's with rat as key
-  });
-
-  return rgdMap;
-};
-
+  return keyMap;
+};*/
   /****** Network creation ******/
-// => cytoInfo
-var readNetworkData = function readNetworkData(resText, rgdMap, eData) {
-  var lines = resText.replace(/\r/g,"") //removes carriage returns
-    .split(lineSplit);
+// networkInfo [{},{},{}] => cytoInfo
+var readNetworkData = function readNetworkData(networkInfo, rMap, eData) {
 
   var cytoNodes = [];
   var cytoLinks = [];
   var nodesObj = {};
 
-  _.each(lines, function(line) {
-    //lowercases array data from splitting
-    var data = lowerCase(line.split(_Split));
+  _.each(networkInfo, function(lineInfo) {
 
-    var startNodeId = data[0];
-    var endNodeId = data[2];
-    var startNodeInfo = rgdMap[startNodeId];
-    var endNodeInfo = rgdMap[endNodeId];
+    var startNodeId = lineInfo.startNodeId;
+    var endNodeId = lineInfo.endNodeId;
+
+    var startNodeInfo = rMap[startNodeId];
+    var endNodeInfo = rMap[endNodeId];
 
     if(eData[startNodeId]) {
       var startNode = new CytoNode(startNodeId, startNodeInfo, eData[startNodeId] , 'gene');
@@ -122,7 +113,7 @@ var readNetworkData = function readNetworkData(resText, rgdMap, eData) {
       nodesObj[endNodeId] = endNode;
     }
     if(eData[startNodeId] && eData[endNodeId])
-    cytoLinks.push(new CytoLink(startNodeId, endNodeId, data[1].toLowerCase()));
+    cytoLinks.push(new CytoLink(startNodeId, endNodeId, lineInfo.linkType));
   });
 
   console.log('created cytoLinks');
@@ -138,25 +129,64 @@ var readNetworkData = function readNetworkData(resText, rgdMap, eData) {
   };
 };
 
-//all requests for data
-async.waterfall([
-  function reqRGDData(callback) {
 
-    $.get(urlObj.rgdData, function passRgdData(resText) {
-      rgdMap = readRGDData(resText);      //returns rgdMap
+async.waterfall([
+  //makes Network request => network array & rgdKeys
+  function getNetworkData(callback) {
+    var rgdKeys = [];
+    var networkInfo = [];
+
+    $.get(urlObj.networkData, function parseNetworkData(resText) {
+      var lines = resText.replace(/\r/g,"").split(lineSplit); //removes carriage returns and splits
+
+      _.each(lines, function(line) {
+        var data = lowerCase(line.split(_Split));
+
+        var lineInfo = {
+          startNodeId: data[0],
+          linkType: data[1].toLowerCase(),
+          endNodeId: data[2]
+        };
+
+        networkInfo.push(lineInfo);
+        rgdKeys.push(data[0], data[2]);
+      })
+
     }, 'text')
 
     .done(function() {
-      console.log('rgdMap ready');
-      callback(null, rgdMap);
-    })
+      console.log(networkInfo, rgdKeys);
+      callback(null, networkInfo, rgdKeys);
+    });
   },
-  function reqExpressions(rgdMap, callback) {
+  //takes rgdKeys => rgdMap, passes on network array
+  function getRgdMap(networkInfo, rgdKeys, callback) {
+    rgdKeys = _.uniq(rgdKeys); //no duplicates
+
+    var rMap = {};
+
+    $.post(urlObj.rgdData, {rgdReq: rgdKeys}, function queryForRgdInfo(resText) {
+      CHECKTHISVAR = resText;
+      rMap = JSON.parse(resText);
+      //console.log(rMap);
+    }, 'text')
+
+    .done(function() {
+      console.log('GFAP GENE __________'+rMap['gfap']);
+      console.log('rgdMap ready');
+      rgdMap = rMap;    //set rgdMap to the map
+      //console.log(rMap);
+
+      callback(null, networkInfo, rMap);
+    });
+  },
+  //gets and processes expression data
+  function getExpressionData(networkInfo, rMap, callback) {
     var eData = {};
     var eStats = {};
 
     $.get(urlObj.expressionData, function(resText) {
-      var expReturnVals = readExpressionData(resText, rgdMap);
+      var expReturnVals = readExpressionData(resText);
       eData = expReturnVals.eData;
       eStats = expReturnVals.eStats;
 
@@ -167,15 +197,62 @@ async.waterfall([
 
     .done(function() {
       console.log('read expressions successfully');
-      callback(null, rgdMap, eData, eStats);
+      callback(null, networkInfo, rMap, eData, eStats);
     });
   },
-  function reqNetworkData(rgdMap, eData, eStats, callback) {
+  //process networkInfo
+  function readNetworkInfo(networkInfo, rMap, eData, eStats, callback) {
+    var cInfo = {};
+    
+    cInfo = readNetworkData(networkInfo, rMap, eData);
+    cytoInfo = cInfo; //GLOBAL
+
+    callback(null, rMap, eData, eStats, cInfo)
+  }], 
+
+  //waterfall callback
+  function completeReqs(err, rMap, eData, eStats, cInfo) {
+    console.log(err, rMap, eData, eStats, cInfo);
+
+    if(err) {
+      console.error('ERR: '+err.message);
+    }
+    console.log('all data loaded.')
+
+    renderCyto(cInfo);
+  }
+);
+
+
+
+/*
+//all requests for data
+async.waterfall([
+  function reqExpressions(callback) {
+    var eData = {};
+    var eStats = {};
+
+    $.get(urlObj.expressionData, function(resText) {
+      var expReturnVals = readExpressionData(resText);
+      eData = expReturnVals.eData;
+      eStats = expReturnVals.eStats;
+
+      expData = eData; //GLOBALS
+      expStats = eStats;
+
+    }, 'text')
+
+    .done(function() {
+      console.log('read expressions successfully');
+      callback(null, eData, eStats);
+    });
+  },
+  function reqNetworkData(eData, eStats, callback) {
 
     var cInfo = {};
 
     $.get(urlObj.networkData, function setUpCytoInfo(resText) {
-      cInfo = readNetworkData(resText, rgdMap, eData, eStats);
+      cInfo = readNetworkData(resText, rgdMap, eData);
       cytoInfo = cInfo; //GLOBAL
     }, 'text')
 
@@ -194,4 +271,5 @@ async.waterfall([
   console.log('all data loaded.')
 
   renderCyto(cytoInfo);
-});
+});*/
+
