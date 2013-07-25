@@ -83,6 +83,7 @@ var colorsFromR = function colorsFromR(readFrom, breaks) {
 //returns the rgd Info for the rgdKeys provided in the req
 app.post('/resources/rgd', function(req, res) {
   var rgdReq = req.body.rgdReq || req.body.rgdRequest;
+  rgdReq = _.uniq(rgdReq);
   var rgdInfo = {};
 
   if(!(rgdReq && _.isArray(rgdReq))) {
@@ -90,23 +91,58 @@ app.post('/resources/rgd', function(req, res) {
   }
 
   //get each key from redis
-  _.each(rgdReq, function(rgdKey) {
-    if(!rgdInfo[rgdKey] && cli.exists(rgdKey)) {
-      rgdInfo[rgdKey] = JSON.parse(cli.get(rgdKey)); //parsed JSON of the rgdInfo
+  async.series([
+    function getKeys(nextFunc) {
+
+      _.each(rgdReq, function(rgdKey) {
+        async.waterfall([
+          function checkAndGetRgd(callback) {
+            cli.exists(rgdKey, function(err, exists) {
+              if(!err && exists) {
+                cli.get(rgdKey, function(err, rgdObj) {
+                  if(!err) {
+                    callback(null, JSON.parse(rgdObj));
+                  }
+                  else {
+                    console.error('ERR: '+err.message);
+                  }
+                }); //parsed JSON of the rgdInfo
+              }
+              else if(!err) {
+                callback(null, {
+                  symbol: rgdKey,
+                  rat: null,
+                  human: null,
+                  mouse: null
+                });
+              }
+              else {
+                console.error('ERR: '+err.message);
+                callback(err, null);
+              }
+            });
+          },
+          function (rgdObj, callback) {
+            rgdInfo[rgdKey] = rgdObj;
+            if(Object.keys(rgdInfo).length === rgdReq.length) {
+              nextFunc(null); //move to the next part
+            }
+          }
+        ]);
+      });
+    },
+    function rgdStringify(callback) {
+      rgdInfo = JSON.stringify(rgdInfo);
+      callback(null);
+    }
+  ], function sendRes(err) {
+    if(!err) {
+      res.json(rgdInfo);
     }
     else {
-      rgdInfo[rgdKey] = {
-        symbol: rgdKey,
-        rat: null,
-        human: null,
-        mouse: null
-      };
+      console.error('ERR: '+err.message);
     }
   });
-
-  rgdInfo = JSON.stringify(rgdInfo);
-
-  res.send(rgdInfo);
 });
 
 http.createServer(app).listen(app.get('port'), function(){
