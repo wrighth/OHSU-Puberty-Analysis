@@ -1,3 +1,8 @@
+//-for zooming
+mixin zoom
+    .zoomIn
+    .zoomOut
+
 doctype html
 html(lang="en")
   head
@@ -7,14 +12,33 @@ html(lang="en")
     link(type="text/css",rel="stylesheet",href="/css/style.css")
 
   body
-    #cy()
+    #cy
     #msg Node Information
-    // input#search(autofocus) //search for a specific gene
+    input#search(placeholder="Search the Network",autofocus) 
+    //search for a specific gene
+
     button#redo Re-render
+
+    // for each timePoint in timePoints
     .timePoint.timeSelect(data-time="ej") Early Juvenile
     .timePoint(data-time="lj") Late Juvenile
     .timePoint(data-time="lp") Late Puberty
-    // input#meanControl  //choose the range of expression values to see
+    // t
+
+    mixin zoom
+
+    input#expMax
+    input#expMin
+    input#midPointControl  
+    //choose the range of expression values to see
+
+    #expGradient
+
+    #layoutControls
+        ul
+            li Save
+            li Upload
+            li Default Layouts
 
     script(src='/js/libs/async.min.js')
     script(src="/js/libs/cytoscape.min.js")
