@@ -1,7 +1,8 @@
 //-for zooming
 mixin zoom
-    .zoomIn
-    .zoomOut
+    .zoom
+        button#zoomIn   +  
+        button#zoomOut   -  
 
 doctype html
 html(lang="en")
@@ -23,17 +24,20 @@ html(lang="en")
     .timePoint.timeSelect(data-time="ej") Early Juvenile
     .timePoint(data-time="lj") Late Juvenile
     .timePoint(data-time="lp") Late Puberty
-    // t
+    // 
 
     mixin zoom
 
-    input#expMax
-    input#expMin
-    input#midPointControl  
+    #expControls
+        input#expMax(placeholder="Set Max")
+        input#expMin(placeholder="Set Min")
+        input#midPointControl(placeholder="Set New Center Point")
     //choose the range of expression values to see
 
+    //hide until implemented
     #expGradient
 
+    //hide until needed
     #layoutControls
         ul
             li Save
