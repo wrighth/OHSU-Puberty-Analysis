@@ -110,3 +110,46 @@ var processExpression = function processExpression(val, time, options) {
 
   return randColor(decimal);
 };
+
+
+//Core Styling Functionality
+var Core = function Core() {
+  this.nodeShapeMap = {
+    gene: 'circle',
+    mirna: 'hexagon',
+    stimulate: 'triangle',
+    inhibit: 'rectangle'      //inhibitor or inhibit? 
+  };
+  this.linkColorMap = {
+    pathway: 'red',
+    'shared-protein-domains': 'blue',
+    coexpression: 'purple',           //co-expression?
+    'genetic-interactions': 'green',
+    'protein-protein-interactions': 'orange',
+    'predicted-protein-interactions': 'orange',
+    colocalization: 'black',
+    'protein-dna': 'indigo',
+    'mirna-rna': 'indigo',
+    'regulatory': 'yellow'
+  };
+  this.linkWeightMap = {
+    'predicted-protein-interactions': 0.5,
+    'mirna-rna': 0.5
+  };
+};
+
+Core.prototype.getNodeShape = function getNodeShape(node) {
+  return this.nodeShapeMap[node.data.type] || 'octagon';
+};
+
+Core.prototype.getLinkColor = function getLinkColor(link) {
+  return this.linkColorMap[link.data.type] || 'black';
+};
+
+Core.prototype.getLinkWeightRatio = function getLinkWeight(link) {
+  return this.linkWeightMap[link.data.type];    //default weight
+};
+
+
+var core = new Core();
+
