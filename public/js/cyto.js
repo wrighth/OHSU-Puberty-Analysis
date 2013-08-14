@@ -162,7 +162,7 @@ renderBtn.addEventListener('click', function() {
   });
 });
 
-//Buttons for timePoints
+//interactive styling for timepoint buttons
 var btns = $$$('.timePoint');
 _.each(btns, function(btn) {
   btn.addEventListener('click', function(event) {
@@ -178,6 +178,11 @@ _.each(btns, function(btn) {
       //changing the color should be the last thing to do*/
       $$('.timeSelect').classList.remove('timeSelect');
       target.classList.add('timeSelect');
+
+      var timePoint = target.dataset.time;
+      console.log(timePoint);
+      core.getNewColors(timePoint);
+      console.log('got new colors');
     }
   });
 });

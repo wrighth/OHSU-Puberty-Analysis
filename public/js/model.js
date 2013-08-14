@@ -21,6 +21,7 @@ var Core = function Core() {
   this.linkStyleMap = {
     'predicted-protein-interactions': 'dashed'
   };
+  this.currentTimePoint;
 };
 
 Core.prototype.getNodeShape = function getNodeShape(node) {
@@ -35,12 +36,67 @@ Core.prototype.getLinkWeightRatio = function getLinkWeight(link) {
   return this.linkStyleMap[link.data.type];    //default weight
 };
 
-Core.prototype.getNodeColor = function getNodeColor(node) {
-  console.log(node);
+Core.prototype.getInitialNodeColor = function getNodeColor(node) {
+  this.currentTimePoint = 'ej';
   return processExpression(node.data.expression.ej, 'ej');
 };
 
+//for use after initial color call
+//gets all new colors
+Core.prototype.getNewColors = function(timePoint) {
+  if(timePoint && this.currentTimePoint != timePoint) {
+    var newColorMap = {};
+
+    //get each things color via XHR
+    _.each(cy.nodes(), function(node) {
+      var pointValue = expData[node.id()][timePoint];
+
+      //calculate the color the the point
+      var colorAtPoint = processExpression(pointValue, timePoint);
+      newColorMap[node.id()] = colorAtPoint;
+      console.log(node.id() +' is '+ colorAtPoint);
+    });    
+
+    //set new node colors
+    _.each(cy.nodes(), function(node) {
+      node.css('background-color', newColorMap[node.id()]);
+      console.log('set '+node.id()+' to '+newColorMap[node.id()]);
+    });
+
+    this.currentTimePoint = timePoint;
+    msgBox.value = 'Changed to ' + timePoint + '.';
+  }
+};
+
 var core = new Core();
+
+/*********************************\
+         Color Management
+\*********************************/
+
+var processExpression = function processExpression(val, timePoint) {
+  var decimal = (val - expStats.min[timePoint])/(expStats.max[timePoint] - expStats.min[timePoint]);
+
+  return randColor(decimal);
+};
+
+var randColor = function randColor(decimal) {
+  var buffer = decimal - 0.5;
+
+  var green = (buffer >= 0)? 255*Math.abs(buffer) : 0;
+  var red = (buffer >= 0)? 0 : 255*Math.abs(buffer);
+
+  return rgbToHex(red,green,0); //returns something between red and green
+};
+
+//converts RGB to hexadecimal
+var rgbToHex = function rgbToHex(r, g, b) {
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+/*********************************\
+         Helper Functions
+\*********************************/
 
 //String#startsWith for search
 if (!String.prototype.startsWith) {
@@ -63,10 +119,9 @@ var lowerCase = function toLower(arr) {
   return newArr;
 };
 
-//converts RGB to hexadecimal
-var rgbToHex = function rgbToHex(r, g, b) {
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
+/*********************************\
+         Cytoscape Objects
+\*********************************/
 
 var CytoNode = function CytoNode(id, nodeInfo, expression, type) {
   var classList = [type];
@@ -81,7 +136,7 @@ var CytoNode = function CytoNode(id, nodeInfo, expression, type) {
     expression: expression
   };
   //STYLES
-  this.data.style_node_color = core.getNodeColor(this);
+  this.data.style_node_color = core.getInitialNodeColor(this);
   this.data.style_node_shape = core.getNodeShape(this);
 };
 
@@ -101,23 +156,9 @@ var CytoLink = function CytoLink(startNodeId, endNodeId, linkType) {
   this.data.style_line_weight = (core.getLinkWeightRatio(this))? core.getLinkWeightRatio*linkWeight : linkWeight;
 };
 
-var randColor = function randColor(decimal) {
-  var buffer = decimal - 0.5;
-
-  var green = (buffer >= 0)? 255*Math.abs(buffer) : 0;
-  var red = (buffer >= 0)? 0 : 255*Math.abs(buffer);
-
-  return rgbToHex(red,green,0); //returns something between red and green
-};
-
-var processExpression = function processExpression(val, time, options) {
-  //time = (expData[time])? time : 'ej';
-
-  var decimal = (val - expStats.min[time])/(expStats.max[time] - expStats.min[time]);
-
-  return randColor(decimal);
-};
-
+/*********************************\
+        Data Holding Objects
+\*********************************/
 var RGD = function RGD(dataArr) {
   this.symbol = dataArr[0] || dataArr[3] || dataArr[7]; //defaults to human or mouse if rat does not exist
   //should be the same for all species, could be missing from rat or human
