@@ -102,11 +102,13 @@ var renderCyto = function renderCyto(cytoVar) {
 
       //click and touch events
       cy.on('tap', 'node', function(e){
+        search.value = ''; //clear search box
+
         var node = e.cyTarget; 
         var neighborhood = node.neighborhood().add(node);
         var nodeInfo = rgdMap[node.id()]; //change this to use built in data
         
-        msgBox.innerHTML = node.data('id') + ' : ' + node.data('name') + '\n';
+        msgBox.innerHTML = node.data('id') + ' : ' + node.data('name') + '<br>';
         
         if(nodeInfo.human) {
           msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><br>";
@@ -125,6 +127,7 @@ var renderCyto = function renderCyto(cytoVar) {
       cy.on('tap', function(e){
         if( e.cyTarget === cy ){
           cy.elements().removeClass('faded');
+          search.value = '';
         }
       });
 
@@ -182,10 +185,22 @@ _.each(btns, function(btn) {
 //SEARCH FUNCTIONALITY
 var search = $$('#search');
 search.addEventListener('input', function() {
-  var val = search.value;
-  console.log(val);
-  var el = cy.elements('node#'+val);
-  if(el) {
-    cy.center(el);
-  }
+  var searchVal = search.value;
+
+  var resultsToFade = cy.filter(function(counter, ele) {
+    //startsWith supported by mixin to Object.prototype
+    if(!ele.id().startsWith(searchVal)) {
+      return ele;
+    }
+  });
+  var searchResults = cy.filter(function(counter, ele) {
+    //startsWith supported by mixin to Object.prototype
+    if(ele.id().startsWith(searchVal)) {
+      return ele;
+    }
+  });
+
+  //clear results
+  searchResults.removeClass('faded');
+  resultsToFade.addClass('faded');
 });
