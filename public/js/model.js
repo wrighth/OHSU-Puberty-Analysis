@@ -32,7 +32,7 @@ Core.prototype.getLinkColor = function getLinkColor(link) {
 };
 
 Core.prototype.getLinkWeightRatio = function getLinkWeight(link) {
-  return this.linkWeightMap[link.data.type];    //default weight
+  return this.linkStyleMap[link.data.type];    //default weight
 };
 
 Core.prototype.getNodeColor = function getNodeColor(node) {
@@ -41,6 +41,19 @@ Core.prototype.getNodeColor = function getNodeColor(node) {
 };
 
 var core = new Core();
+
+//String#startsWith for search
+if (!String.prototype.startsWith) {
+  Object.defineProperty(String.prototype, 'startsWith', {
+    enumerable: false,
+    configurable: false,
+    writable: false,
+    value: function (searchString, position) {
+      position = position || 0;
+      return this.indexOf(searchString, position) === position;
+    }
+  });
+}
 
 //lower cases everything
 var lowerCase = function toLower(arr) {
