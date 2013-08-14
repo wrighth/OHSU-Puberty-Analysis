@@ -202,5 +202,6 @@ search.addEventListener('input', function() {
 
   //clear results
   searchResults.removeClass('faded');
+  cy.edges().addClass('faded');
   resultsToFade.addClass('faded');
 });
