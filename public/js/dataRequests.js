@@ -2,7 +2,7 @@
 var lineSplit = /\n/;
 var _Split = '_';
 
-var URL = 'http://spock.csee.ogi.edu:8000/';
+var URL = 'http://spock.csee.ogi.edu:8080/';
 var urlObj = {
   rgdData: URL + 'resources/rgd',
   networkData: URL + 'data/basakData.sif',
