@@ -108,16 +108,16 @@ var renderCyto = function renderCyto(cytoVar) {
         var neighborhood = node.neighborhood().add(node);
         var nodeInfo = rgdMap[node.id()]; //change this to use built in data
         
-        msgBox.innerHTML = node.data('id') + ' : ' + node.data('name') + '<br>';
+        msgBox.innerHTML = node.data('id') + "<span class='buffer'></span>";
         
         if(nodeInfo.human) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><br>";
+          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><span class='buffer'>";
         }
         if(nodeInfo.rat) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.rat.entrezGeneId + "'>Additional Rat Information</a><br>";
+          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.rat.entrezGeneId + "'>Additional Rat Information</a><span class='buffer'>";
         }
         if(nodeInfo.mouse) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.mouse.entrezGeneId + "'>Additional Mouse Information</a><br>";
+          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.mouse.entrezGeneId + "'>Additional Mouse Information</a><span class='buffer'>";
         }
 
         cy.elements().addClass('faded');
@@ -162,7 +162,7 @@ renderBtn.addEventListener('click', function() {
   });
 });
 
-//Buttons for timePoints
+//interactive styling for timepoint buttons
 var btns = $$$('.timePoint');
 _.each(btns, function(btn) {
   btn.addEventListener('click', function(event) {
@@ -178,6 +178,11 @@ _.each(btns, function(btn) {
       //changing the color should be the last thing to do*/
       $$('.timeSelect').classList.remove('timeSelect');
       target.classList.add('timeSelect');
+
+      var timePoint = target.dataset.time;
+      console.log(timePoint);
+      core.getNewColors(timePoint);
+      console.log('got new colors');
     }
   });
 });
@@ -202,5 +207,6 @@ search.addEventListener('input', function() {
 
   //clear results
   searchResults.removeClass('faded');
+  cy.edges().addClass('faded');
   resultsToFade.addClass('faded');
 });
