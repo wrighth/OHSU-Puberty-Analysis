@@ -67,13 +67,16 @@ var renderCyto = function renderCyto(cytoVar) {
           'color': 'white',
           'text-outline-width': 2,
           'text-outline-color': '#888',
-          'background-color': 'data(color)',
+          'background-color': 'data(style_node_color)',
+          'shape': 'data(style_node_shape)'
 
         })
       .selector('edge')
         .css({
           'target-arrow-shape': 'none',
-          'line-style': 'solid'
+          'line-style': 'solid',
+          'line-color': 'data(style_line_color)',
+          'line-style': 'data(style_line_style)'
         })
       .selector(':selected')
         .css({
