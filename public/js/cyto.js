@@ -142,26 +142,6 @@ var renderCyto = function renderCyto(cytoVar) {
   });
 };
 
-//RERENDERING
-var renderBtn = $$('#redo');
-renderBtn.addEventListener('click', function() {
-  var allNodes = cy.$('node');
-  
-  _.each(allNodes, function changeColor(node) {
-    var nodeName = node.data('id');
-
-    if(expData[nodeName]) {
-      var oldColor = node.css('background-color');
-      var color = processExpression(expData[nodeName]['lj'], 'lj');
-      console.log(oldColor+' --> '+color);
-      node.css('background-color', color);
-    }
-    else {
-      console.log(nodeName);
-    }
-  });
-});
-
 //interactive styling for timepoint buttons
 var btns = $$$('.timePoint');
 _.each(btns, function(btn) {
