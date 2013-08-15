@@ -171,10 +171,6 @@ _.each(btns, function(btn) {
 
     if(!target.classList.contains('timeSelect')) {
 
-      /*$.get(URL+'color', {expInfo:expInfo}, function(resText) {
-        console.log(resText);
-      }, 'text');
-
       //changing the color should be the last thing to do*/
       $$('.timeSelect').classList.remove('timeSelect');
       target.classList.add('timeSelect');
