@@ -1,4 +1,6 @@
-//core dependencies
+/********************************\
+           Dependencies
+\********************************/
 var express = require('express');
 var http = require('http');
 var path = require('path');
@@ -21,8 +23,11 @@ var _ = require('underscore');
 var async = require('async');
 
 //child processes - calling R from node
-var sys = require('util');
 var exec = require('child_process').exec;
+
+/********************************\
+----------------------------------
+\********************************/
 
 //mixin
 _.each(async, function(fn, name) {
@@ -53,30 +58,63 @@ app.get('/', function(req, res) {
   res.render('index', { title: 'Express' });
 });
 
-app.get('/resources/color', function(req, res) {
-  var expInfo = req.query.expInfo;
-  if(!expInfo) {
+
+/********************************\
+             Resources
+\********************************/
+app.post('/resources/color', function(req, res) {
+  var expInfo = req.body.expInfo;
+
+  if(!expInfo || !_.isObject(expInfo)) {
     res.send('ERR: no expInfo!');
   }
 
-  if(_.isObject(expInfo)) {
-    //write file using fs
-  }
-  //pass file to colors
-  //res.send colors obj
+  var writeFileTo = "data/colorVals.txt";
+  var expInfoString = "";
 
-  res.send(expInfo);
+  _.each(expInfo, function(val, rgdKey) {
+    expInfoString += "\n"+val+","+rgdKey; //has an extra \n at front
+  });
+
+  expInfoString.slice(1);     //remove extra \n
+  //console.log(expInfoString); WORKS
+
+  fs.writeFile(writeFileTo, expInfoString, 'utf-8', function(err) {
+    if(err) {console.log(err.message);throw err;}
+    
+    console.log('wrote expression data to '+writeFileTo);
+
+    colorsFromR(writeFileTo, function (output) {
+      var responseObj = {};
+      _.each(output.split('\n'), function(line) {
+        var keyVal = line.split('_');
+        responseObj[keyVal[0]] = keyVal[1];
+      });
+      res.json(responseObj);
+    });
+    
+  });
 });
 
-var colorsFromR = function colorsFromR(readFrom, breaks) {
-  var readFrom = readFrom || "exps.txt";
-  var breaks = breaks || 32;
+//async or sync!
+var colorsFromR = function colorsFromR(readFrom, breaks, callback) {
+  if(_.isFunction(breaks)) {
+    callback = breaks;
+    breaks = 32;
+  }
+  else {
+    breaks = breaks || 32;
+  }
+
   var command = "R --slave --args "+readFrom+" "+breaks+" < parse_colors.R";
 
-  var child = exec(command, function (err, stdout, stderr) {
-    var data = stderr.split(/\n/);
-
-    sys.print('stdout: ' + stdout);
+  var child = exec(command, function (err, stdout) {
+    if(callback) {
+      callback(stdout); //calls the callback passing in output
+    }
+    else {
+      return stdout;
+    }
   });
 };
 
