@@ -140,7 +140,7 @@ var CytoNode = function CytoNode(id, nodeInfo, expression, type) {
     expression: expression
   };
   //STYLES
-  this.data.style_node_color = core.getInitialNodeColor(this);
+  this.data.style_node_color = 'grey'; //default grey
   this.data.style_node_shape = core.getNodeShape(this);
 };
 
