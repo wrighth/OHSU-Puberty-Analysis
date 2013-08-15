@@ -6,7 +6,8 @@ var URL = 'http://spock.csee.ogi.edu:8080/';
 var urlObj = {
   rgdData: URL + 'resources/rgd',
   networkData: URL + 'data/basakData.sif',
-  expressionData: URL + 'data/test_levels.txt'
+  expressionData: URL + 'data/test_levels.txt',
+  colorData: URL + 'resources/color'
 }
 
 //GLOBAL VARIABLES

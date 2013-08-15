@@ -54,7 +54,6 @@ var renderCyto = function renderCyto(cytoVar) {
     minzoom: 1,
     maxzoom: 5,
 
-
     style: cytoscape.stylesheet()
       .selector('core')
         .css({
@@ -99,6 +98,7 @@ var renderCyto = function renderCyto(cytoVar) {
     ready: function(){
       window.cy = this;
       cy.elements().unselectify();
+      core.getNewColors('ej'); //gets initial colors
 
       //click and touch events
       cy.on('tap', 'node', function(e){
@@ -170,10 +170,6 @@ _.each(btns, function(btn) {
     //var expInfo = target.dataset.time;
 
     if(!target.classList.contains('timeSelect')) {
-
-      /*$.get(URL+'color', {expInfo:expInfo}, function(resText) {
-        console.log(resText);
-      }, 'text');
 
       //changing the color should be the last thing to do*/
       $$('.timeSelect').classList.remove('timeSelect');

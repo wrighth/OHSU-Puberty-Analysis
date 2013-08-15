@@ -45,23 +45,27 @@ Core.prototype.getInitialNodeColor = function getNodeColor(node) {
 //gets all new colors
 Core.prototype.getNewColors = function(timePoint) {
   if(timePoint && this.currentTimePoint != timePoint) {
-    var newColorMap = {};
+    var colorReqMap = {};
 
     //get each things color via XHR
     _.each(cy.nodes(), function(node) {
       var pointValue = expData[node.id()][timePoint];
+      var nodeId = node.id();
 
       //calculate the color the the point
-      var colorAtPoint = processExpression(pointValue, timePoint);
-      newColorMap[node.id()] = colorAtPoint;
-      console.log(node.id() +' is '+ colorAtPoint);
-    });    
-
-    //set new node colors
-    _.each(cy.nodes(), function(node) {
-      node.css('background-color', newColorMap[node.id()]);
-      console.log('set '+node.id()+' to '+newColorMap[node.id()]);
+      //var colorAtPoint = processExpression(pointValue, timePoint);
+      colorReqMap[nodeId] = pointValue;//colorAtPoint;
+      //console.log(node.id() +' is '+ colorAtPoint);
     });
+
+    $.post(urlObj.colorData, {expData: colorReqMap}, function(newColorData) {
+      console.log(newColorData);
+      //set new node colors
+      _.each(cy.nodes(), function(node) {
+        node.css('background-color', newColorData[node.id()]);
+        console.log('set '+node.id()+' to '+newColorData[node.id()]);
+      });
+    });  
 
     this.currentTimePoint = timePoint;
     msgBox.value = 'Changed to ' + timePoint + '.';
@@ -126,7 +130,7 @@ var lowerCase = function toLower(arr) {
 var CytoNode = function CytoNode(id, nodeInfo, expression, type) {
   var classList = [type];
 
-  console.log(id, expression);
+  //console.log(id, expression);
   this.classes = classList.join(' ');
   this.data = {
     id : id,
@@ -136,7 +140,7 @@ var CytoNode = function CytoNode(id, nodeInfo, expression, type) {
     expression: expression
   };
   //STYLES
-  this.data.style_node_color = core.getInitialNodeColor(this);
+  this.data.style_node_color = 'grey'; //default grey
   this.data.style_node_shape = core.getNodeShape(this);
 };
 
