@@ -137,6 +137,18 @@ var renderCyto = function renderCyto(cytoVar) {
         msgBox.innerText = link.data('source')+' =['+link.data('type')+']=>'+link.data('target');
       });
 
+      var timePointsBox = $$('#timePoints');
+      _.each(timePointsList, function(timePoint) {
+        var newTimePointBtn = document.createElement('div');
+        newTimePointBtn.classList.add('timePoint');
+        newTimePointBtn.setAttribute('data-time', timePoint.symbol);
+        newTimePointBtn.innerText = timePoint.name;
+        timePoints.appendChild(newTimePointBtn);
+      });
+
+      //make sure not to have a comment as the first child
+      timePointsBox.firstChild.classList.add('timeSelect');
+
       //interactive styling for timepoint buttons
       //has to be here if timePoint will be abstracted
       var btns = $$$('.timePoint');
