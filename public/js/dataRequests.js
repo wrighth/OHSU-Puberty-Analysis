@@ -20,7 +20,7 @@ var timePointsList = [];
 //resText of expressions => eData,eStats
 //ACCOUNTS FOR VARIABLE NUMBER OF TIMEPOINTS
 var readExpressionData = function readExpressionData(resText) {
-  var data = resText.split(lineSplit);
+  var data = resText.replace(/\r/g,'').split(lineSplit);
   var numElems = data.length;
   var eData = {};
   var eStats = {};
@@ -46,15 +46,16 @@ var readExpressionData = function readExpressionData(resText) {
       valList[symbol] = [];
       mean[symbol] = 0;
 
-      numElems--; //subtract one line from num of data lines
+      numElems--; //subtract one line from num of data lines (for mean calculation)
     }
     else {
       var currentRgdKey = pts[0].toLowerCase();
       //fill eData w/ objects
       eData[currentRgdKey] = {};
 
-      for(var i = 1; i < pts.length; i++) {
-        //WORKING console.log(timePointsList[i-1]);
+      //if there are more values than timePoints, then ignore the extra value
+      var numTimesToRun = (pts.length -1 <= timePointsList.length)? pts.length : timePointsList.length +1;
+      for(var i = 1; i < numTimesToRun; i++) {
         var currentTimePoint = timePointsList[i-1].symbol;
 
         pts[i] = parseFloat(pts[i]);
