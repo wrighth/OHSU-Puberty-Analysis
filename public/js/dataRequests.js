@@ -15,59 +15,77 @@ var expData = {};
 var expStats = {};
 var cytoInfo = {};
 var rgdMap = {};
+var timePointsList = [];
 
 //resText of expressions => eData,eStats
+//ACCOUNTS FOR VARIABLE NUMBER OF TIMEPOINTS
 var readExpressionData = function readExpressionData(resText) {
   var data = resText.split(lineSplit);
+  var numElems = data.length;
   var eData = {};
   var eStats = {};
+  timePointsList = [];
 
-  var valList = {ej:[],lj:[],lp:[]};
-  var mean = {ej:0,lj:0,lp:0};
-  var numElems = data.length;
+  var valList = {};
+  var mean = {};
 
   //FINDS MAX,MIN,AVG
   _.each(data, function(line) {
     var pts = line.split(_Split);
 
-    for(var i = 1; i < pts.length; i++) {
-      pts[i] = parseFloat(pts[i]);
+    if(pts[2] === 'info') {
+      var symbol = pts[0];
+
+      //DOES NOT CHECK TO SEE IF THE TEXT FILE CONTAINS DUPLICATE SYMBOLS
+      timePointsList.push({
+        symbol: symbol,
+        name: pts[1]
+      });
+
+      //defaults
+      valList[symbol] = [];
+      mean[symbol] = 0;
+
+      numElems--; //subtract one line from num of data lines
     }
+    else {
+      var currentRgdKey = pts[0].toLowerCase();
+      //fill eData w/ objects
+      eData[currentRgdKey] = {};
 
-    valList.ej.push(pts[1]);
-    valList.lj.push(pts[2]);
-    valList.lp.push(pts[3]);
+      for(var i = 1; i < pts.length; i++) {
+        //WORKING console.log(timePointsList[i-1]);
+        var currentTimePoint = timePointsList[i-1].symbol;
 
-    eData[pts[0].toLowerCase()] = {
-      ej: pts[1],
-      lj: pts[2],
-      lp: pts[3]
-    };
+        pts[i] = parseFloat(pts[i]);
 
-    mean.ej += pts[1];
-    mean.lj += pts[2];
-    mean.lp += pts[3];
+        //fill all values from timePointsList with 
+        valList[currentTimePoint].push(pts[i]);
+        //fill objects in expData object with values
+        eData[currentRgdKey][currentTimePoint] = pts[i];
+        //fill mean object
+        mean[currentTimePoint] += pts[i];
+      }
+    }
   });
 
   //calculate the averages
   _.each(mean, function(val, key) {
-
+    //account extra data by subtracting from length when they are added
     mean[key] /= numElems;
   });
 
   eStats = {
-    max:{
-      ej:_.max(valList.ej),
-      lj:_.max(valList.lj),
-      lp:_.max(valList.lp)
-    },
-    min:{
-      ej:_.min(valList.ej),
-      lj:_.min(valList.lj),
-      lp:_.min(valList.lp)
-    },
-    mean:mean
+    max: {},
+    min: {},
+    mean: mean
   };
+
+  _.each(timePointsList, function(timePointInfo) {
+    var currentSymbol = timePointInfo.symbol;
+    eStats.max[currentSymbol] = _.max(valList[currentSymbol]);
+    eStats.min[currentSymbol] = _.min(valList[currentSymbol]);
+  });
 
   return {
     eData : eData,
@@ -201,3 +219,11 @@ async.waterfall([
     renderCyto(cInfo);
   }
 );
+
+var timePointExists = function timePointExists(symbol) {
+  _.each(timePointsList, function(timePointInfo) {
+    if(timePointInfo.symbol === symbol)
+      return true;
+  });
+  return false;
+};

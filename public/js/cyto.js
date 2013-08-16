@@ -136,32 +136,33 @@ var renderCyto = function renderCyto(cytoVar) {
 
         msgBox.innerText = link.data('source')+' =['+link.data('type')+']=>'+link.data('target');
       });
+
+      //interactive styling for timepoint buttons
+      //has to be here if timePoint will be abstracted
+      var btns = $$$('.timePoint');
+      _.each(btns, function(btn) {
+        btn.addEventListener('click', function(event) {
+          var target = event.target;
+          //var expInfo = target.dataset.time;
+
+          if(!target.classList.contains('timeSelect')) {
+
+            //changing the color should be the last thing to do*/
+            $$('.timeSelect').classList.remove('timeSelect');
+            target.classList.add('timeSelect');
+
+            var timePoint = target.dataset.time;
+            console.log(timePoint);
+            core.getNewColors(timePoint);
+            console.log('got new colors');
+          }
+        });
+      });
     },
 
     layout: arborOptions
   });
 };
-
-//interactive styling for timepoint buttons
-var btns = $$$('.timePoint');
-_.each(btns, function(btn) {
-  btn.addEventListener('click', function(event) {
-    var target = event.target;
-    //var expInfo = target.dataset.time;
-
-    if(!target.classList.contains('timeSelect')) {
-
-      //changing the color should be the last thing to do*/
-      $$('.timeSelect').classList.remove('timeSelect');
-      target.classList.add('timeSelect');
-
-      var timePoint = target.dataset.time;
-      console.log(timePoint);
-      core.getNewColors(timePoint);
-      console.log('got new colors');
-    }
-  });
-});
 
 //SEARCH FUNCTIONALITY
 var search = $$('#search');
