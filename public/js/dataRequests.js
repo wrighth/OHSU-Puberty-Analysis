@@ -11,10 +11,9 @@ var urlObj = {
 }
 
 //GLOBAL VARIABLES
-var expData = {};
 var cytoInfo = {};
 var rgdMap = {};
-//WILL HOLD ACCESS TO ALL DATA OF expData, expStats, name, symbol, etc
+//WILL HOLD ACCESS TO ALL DATA OF eData, eStats, name, symbol, etc
 var timePointMap = {};
 /*
   data: ,
@@ -83,7 +82,7 @@ var readExpressionData = function readExpressionData(resText) {
 
           //fill all values from timePointsList with 
           valList[currentTimePoint].push(pts[i]);
-          //fill objects in expData object with values
+          //fill objects in eData object with values
           eData[currentRgdKey][currentTimePoint] = pts[i];
           //fill mean object
           mean[currentTimePoint] += pts[i];
@@ -219,8 +218,6 @@ async.waterfall([
 
     $.get(urlObj.expressionData, function(resText) {
       eData = readExpressionData(resText);
-
-      expData = eData; //GLOBALS
 
     }, 'text')
 
