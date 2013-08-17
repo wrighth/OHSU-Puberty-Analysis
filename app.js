@@ -11,7 +11,7 @@ var stylus = require('stylus');
 var nib = require('nib');
 
 //database interaction
-var neo4j = require('neo4j'); //replace with db module
+//var neo4j = require('neo4j'); //replace with db module
 var redis = require('redis');
 
 //sockets will come later
