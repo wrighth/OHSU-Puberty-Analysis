@@ -66,7 +66,7 @@ app.post('/resources/color', function(req, res) {
   var expInfo = req.body.expInfo || req.body.expData;
 
   if(!expInfo || !_.isObject(expInfo)) {
-    res.send('ERR: no expInfo!');
+    res.json({});
   }
 
   var writeFileTo = "data/colorVals.txt";

@@ -20,11 +20,12 @@ html(lang="en")
 
     button#redo Re-render
 
-    // for each timePoint in timePoints
-    .timePoint.timeSelect(data-time="ej") Early Juvenile
-    .timePoint(data-time="lj") Late Juvenile
-    .timePoint(data-time="lp") Late Puberty
-    // 
+    #timePoints
+        //-
+            for each timePoint in timePoints
+            .timePoint.timeSelect(data-time="ej") Early Juvenile
+            .timePoint(data-time="lj") Late Juvenile
+            .timePoint(data-time="lp") Late Puberty
 
     mixin zoom
 

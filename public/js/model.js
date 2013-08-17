@@ -49,7 +49,7 @@ Core.prototype.getNewColors = function(timePoint) {
 
     //get each things color via XHR
     _.each(cy.nodes(), function(node) {
-      var pointValue = expData[node.id()][timePoint];
+      var pointValue = timePointMap[timePoint].data[node.id()];
       var nodeId = node.id();
 
       //calculate the color the the point
@@ -58,9 +58,10 @@ Core.prototype.getNewColors = function(timePoint) {
       //console.log(node.id() +' is '+ colorAtPoint);
     });
 
-    $.post(urlObj.colorData, {expData: colorReqMap}, function(newColorData) {
-      console.log(newColorData);
+    $.post(urlObj.colorData, {expInfo: colorReqMap}, function(newColorData) {
       //set new node colors
+      if(_.isEmpty(newColorData))
+        alert('no colors to change to');
       _.each(cy.nodes(), function(node) {
         node.css('background-color', newColorData[node.id()]);
         console.log('set '+node.id()+' to '+newColorData[node.id()]);
@@ -68,7 +69,7 @@ Core.prototype.getNewColors = function(timePoint) {
     });  
 
     this.currentTimePoint = timePoint;
-    msgBox.value = 'Changed to ' + timePoint + '.';
+    msgBox.innerText = 'Changed to ' + timePoint + '.';
   }
 };
 
