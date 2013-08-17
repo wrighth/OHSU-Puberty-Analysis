@@ -1,6 +1,6 @@
 {
   "name": "OHSU-Puberty-Analysis",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "start": "node app"
@@ -12,7 +12,6 @@
     "nib": "0.9.x",
     "underscore": "1.5.x",
     "async": "~0.2.9",
-    "neo4j": "0.2.x",
     "redis":"0.8.x"
   },
   "devDependencies": {
