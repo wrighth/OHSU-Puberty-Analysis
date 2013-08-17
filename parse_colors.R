@@ -21,7 +21,7 @@ retcols <- function(expr, nbreaks)
 		}
 		i <- i + 1;
 	}
-	return(cbind(ret, tolower(expr[,2])));
+	return(cbind(tolower(expr[,2]), ret));
 }
 args <- commandArgs(TRUE)
 expr <- read.table(args[1], sep=",", header=FALSE, colClasses=c("numeric", "character"));

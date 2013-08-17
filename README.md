@@ -7,6 +7,21 @@ www.puberty.csee.ogi.edu/wordpress/
 This sub-project will provide a web interface with which users can interact with experimentally confirmed and predicted data relevant to the study.
 
 
+INPUT FORMAT For Value Files
+============================
+top row
+the symbols of the times to display
+[timePoint 1]_[timepoint 2]_[timePoint 3]...
+ex. ej_lj_lp 
+
+next few lines
+[timePoint symbol]_[timePoint name]_info
+ex. ej_Early Juvenile_info
+
+rest of the document (majority)
+[rgdSymbol]_[value1]_[value2]_[value3]...
+
+
 Features to Add
 ===============
 Priorities

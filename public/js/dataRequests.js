@@ -6,72 +6,125 @@ var URL = 'http://spock.csee.ogi.edu:8080/';
 var urlObj = {
   rgdData: URL + 'resources/rgd',
   networkData: URL + 'data/basakData.sif',
-  expressionData: URL + 'data/test_levels.txt'
+  expressionData: URL + 'data/test_levels.txt',
+  colorData: URL + 'resources/color'
 }
 
 //GLOBAL VARIABLES
-var expData = {};
-var expStats = {};
 var cytoInfo = {};
 var rgdMap = {};
+//WILL HOLD ACCESS TO ALL DATA OF eData, eStats, name, symbol, etc
+var timePointMap = {};
+/*
+  data: ,
+  name: ,
+  symbol: ,
+  stats: 
+};*/
 
-//resText of expressions => eData,eStats
+//resText of expressions => eData
+//ACCOUNTS FOR VARIABLE NUMBER OF TIMEPOINTS
 var readExpressionData = function readExpressionData(resText) {
-  var data = resText.split(lineSplit);
-  var eData = {};
-  var eStats = {};
-
-  var valList = {ej:[],lj:[],lp:[]};
-  var mean = {ej:0,lj:0,lp:0};
+  var data = resText.replace(/\r/g,'').split(lineSplit);
+  var timesToGet = data.shift().split(_Split);
   var numElems = data.length;
+  var eData = {};
+  var timePointsList = [];
+
+  //put all of the wanted times as keys in the map
+  _.each(timesToGet, function(timePoint) {
+    timePointMap[timePoint] = {};
+  });
+
+  var valList = {};
+  var mean = {};
 
   //FINDS MAX,MIN,AVG
   _.each(data, function(line) {
     var pts = line.split(_Split);
 
-    for(var i = 1; i < pts.length; i++) {
-      pts[i] = parseFloat(pts[i]);
+    //this checks if it helps create timePointsList
+    if(pts[2] === 'info') {
+      if(timePointMap[pts[0]]) {
+        var symbol = pts[0];
+
+        //DOES NOT CHECK TO SEE IF THE TEXT FILE CONTAINS DUPLICATE SYMBOLS
+        timePointsList.push({
+          symbol: symbol,
+          name: pts[1]
+        });
+
+        timePointMap[symbol].symbol = symbol;
+        timePointMap[symbol].name = pts[1];
+
+        //defaults
+        valList[symbol] = [];
+        mean[symbol] = 0;
+      }
+
+      numElems--; //subtract one line from num of data lines (for mean calculation)
     }
+    //for all values
+    else {
+      var currentRgdKey = pts[0].toLowerCase();
+      //fill eData w/ objects
+      eData[currentRgdKey] = {};
 
-    valList.ej.push(pts[1]);
-    valList.lj.push(pts[2]);
-    valList.lp.push(pts[3]);
+      //if there are more values than timePoints, then ignore the extra value
+      var numTimesToRun = (pts.length -1 <= timePointsList.length)? pts.length : timePointsList.length +1;
+      for(var i = 1; i < numTimesToRun; i++) {
+        var currentTimePoint = timePointsList[i-1].symbol;
+        console.log(currentTimePoint);
 
-    eData[pts[0].toLowerCase()] = {
-      ej: pts[1],
-      lj: pts[2],
-      lp: pts[3]
-    };
+        //check if the key is wanted
+        if(timePointMap[currentTimePoint]) {
+          pts[i] = parseFloat(pts[i]);
 
-    mean.ej += pts[1];
-    mean.lj += pts[2];
-    mean.lp += pts[3];
+          //fill all values from timePointsList with 
+          valList[currentTimePoint].push(pts[i]);
+          //fill objects in eData object with values
+          eData[currentRgdKey][currentTimePoint] = pts[i];
+          //fill mean object
+          mean[currentTimePoint] += pts[i];
+        }
+      }
+    }
+  });
+
+  //set values of timePointMap
+  _.each(timePointsList, function(timePointInfo) {
+    var symbol = symbol;
+    if(timePointMap[symbol]) {
+      timePointMap[symbol].symbol = symbol;
+      timePointMap[symbol].name = timePointInfo.name;
+    }
   });
 
   //calculate the averages
-  _.each(mean, function(val, key) {
-
-    mean[key] /= numElems;
+  _.each(mean, function(val, symbol) {
+    //account extra data by subtracting from length when they are added
+    mean[symbol] /= numElems;
   });
 
-  eStats = {
-    max:{
-      ej:_.max(valList.ej),
-      lj:_.max(valList.lj),
-      lp:_.max(valList.lp)
-    },
-    min:{
-      ej:_.min(valList.ej),
-      lj:_.min(valList.lj),
-      lp:_.min(valList.lp)
-    },
-    mean:mean
-  };
+  //    timePointMap Initizalization
+  _.each(timePointMap, function(timePointInfo) {
+    timePointInfo.stats = {};
+    timePointInfo.data = {};
+  });
 
-  return {
-    eData : eData,
-    eStats : eStats
-  };
+  _.each(timePointMap, function(timePointInfo, symbol) {
+
+    _.each(eData, function(expValue, rgdKey) {
+      timePointInfo.data[rgdKey] = expValue[symbol];
+    });
+    
+    //does all statistics work except for mean
+    timePointInfo.stats.max = _.max(valList[symbol]);
+    timePointInfo.stats.min = _.min(valList[symbol]);
+    timePointInfo.stats.mean = mean[symbol];
+  });
+
+  return eData;
 };
   /****** Network creation ******/
 // networkInfo [{},{},{}] => cytoInfo
@@ -113,7 +166,6 @@ var readNetworkData = function readNetworkData(networkInfo, rMap, eData) {
     links : cytoLinks
   };
 };
-
 
 async.waterfall([
   //makes Network request => network array & rgdKeys
@@ -163,35 +215,29 @@ async.waterfall([
   //gets and processes expression data
   function getExpressionData(networkInfo, rMap, callback) {
     var eData = {};
-    var eStats = {};
 
     $.get(urlObj.expressionData, function(resText) {
-      var expReturnVals = readExpressionData(resText);
-      eData = expReturnVals.eData;
-      eStats = expReturnVals.eStats;
-
-      expData = eData; //GLOBALS
-      expStats = eStats;
+      eData = readExpressionData(resText);
 
     }, 'text')
 
     .done(function() {
       console.log('read expressions successfully');
-      callback(null, networkInfo, rMap, eData, eStats);
+      callback(null, networkInfo, rMap, eData);
     });
   },
   //process networkInfo
-  function readNetworkInfo(networkInfo, rMap, eData, eStats, callback) {
+  function readNetworkInfo(networkInfo, rMap, eData, callback) {
     var cInfo = {};
     
     cInfo = readNetworkData(networkInfo, rMap, eData);
     cytoInfo = cInfo; //GLOBAL
 
-    callback(null, rMap, eData, eStats, cInfo)
+    callback(null, rMap, eData, cInfo)
   }], 
 
   //waterfall callback
-  function completeReqs(err, rMap, eData, eStats, cInfo) {
+  function completeReqs(err, rMap, eData, cInfo) {
     if(err) {
       console.error('ERR: '+err.message);
     }

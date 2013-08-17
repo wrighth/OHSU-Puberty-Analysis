@@ -2,3 +2,5 @@ node_modules/*
 *.css
 config.json
 sublimeText/*
+data/*
+alias.sh
