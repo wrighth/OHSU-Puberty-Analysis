@@ -12,19 +12,30 @@ var urlObj = {
 
 //GLOBAL VARIABLES
 var expData = {};
-var expStats = {};
 var cytoInfo = {};
 var rgdMap = {};
-var timePointsList = [];
+//WILL HOLD ACCESS TO ALL DATA OF expData, expStats, name, symbol, etc
+var timePointMap = {};
+/*
+  data: ,
+  name: ,
+  symbol: ,
+  stats: 
+};*/
 
-//resText of expressions => eData,eStats
+//resText of expressions => eData
 //ACCOUNTS FOR VARIABLE NUMBER OF TIMEPOINTS
 var readExpressionData = function readExpressionData(resText) {
   var data = resText.replace(/\r/g,'').split(lineSplit);
+  var timesToGet = data.shift().split(_Split);
   var numElems = data.length;
   var eData = {};
-  var eStats = {};
-  timePointsList = [];
+  var timePointsList = [];
+
+  //put all of the wanted times as keys in the map
+  _.each(timesToGet, function(timePoint) {
+    timePointMap[timePoint] = {};
+  });
 
   var valList = {};
   var mean = {};
@@ -33,21 +44,28 @@ var readExpressionData = function readExpressionData(resText) {
   _.each(data, function(line) {
     var pts = line.split(_Split);
 
+    //this checks if it helps create timePointsList
     if(pts[2] === 'info') {
-      var symbol = pts[0];
+      if(timePointMap[pts[0]]) {
+        var symbol = pts[0];
 
-      //DOES NOT CHECK TO SEE IF THE TEXT FILE CONTAINS DUPLICATE SYMBOLS
-      timePointsList.push({
-        symbol: symbol,
-        name: pts[1]
-      });
+        //DOES NOT CHECK TO SEE IF THE TEXT FILE CONTAINS DUPLICATE SYMBOLS
+        timePointsList.push({
+          symbol: symbol,
+          name: pts[1]
+        });
 
-      //defaults
-      valList[symbol] = [];
-      mean[symbol] = 0;
+        timePointMap[symbol].symbol = symbol;
+        timePointMap[symbol].name = pts[1];
+
+        //defaults
+        valList[symbol] = [];
+        mean[symbol] = 0;
+      }
 
       numElems--; //subtract one line from num of data lines (for mean calculation)
     }
+    //for all values
     else {
       var currentRgdKey = pts[0].toLowerCase();
       //fill eData w/ objects
@@ -57,41 +75,57 @@ var readExpressionData = function readExpressionData(resText) {
       var numTimesToRun = (pts.length -1 <= timePointsList.length)? pts.length : timePointsList.length +1;
       for(var i = 1; i < numTimesToRun; i++) {
         var currentTimePoint = timePointsList[i-1].symbol;
+        console.log(currentTimePoint);
 
-        pts[i] = parseFloat(pts[i]);
+        //check if the key is wanted
+        if(timePointMap[currentTimePoint]) {
+          pts[i] = parseFloat(pts[i]);
 
-        //fill all values from timePointsList with 
-        valList[currentTimePoint].push(pts[i]);
-        //fill objects in expData object with values
-        eData[currentRgdKey][currentTimePoint] = pts[i];
-        //fill mean object
-        mean[currentTimePoint] += pts[i];
+          //fill all values from timePointsList with 
+          valList[currentTimePoint].push(pts[i]);
+          //fill objects in expData object with values
+          eData[currentRgdKey][currentTimePoint] = pts[i];
+          //fill mean object
+          mean[currentTimePoint] += pts[i];
+        }
       }
     }
   });
 
-  //calculate the averages
-  _.each(mean, function(val, key) {
-    //account extra data by subtracting from length when they are added
-    mean[key] /= numElems;
-  });
-
-  eStats = {
-    max: {},
-    min: {},
-    mean: mean
-  };
-
+  //set values of timePointMap
   _.each(timePointsList, function(timePointInfo) {
-    var currentSymbol = timePointInfo.symbol;
-    eStats.max[currentSymbol] = _.max(valList[currentSymbol]);
-    eStats.min[currentSymbol] = _.min(valList[currentSymbol]);
+    var symbol = symbol;
+    if(timePointMap[symbol]) {
+      timePointMap[symbol].symbol = symbol;
+      timePointMap[symbol].name = timePointInfo.name;
+    }
   });
 
-  return {
-    eData : eData,
-    eStats : eStats
-  };
+  //calculate the averages
+  _.each(mean, function(val, symbol) {
+    //account extra data by subtracting from length when they are added
+    mean[symbol] /= numElems;
+  });
+
+  //    timePointMap Initizalization
+  _.each(timePointMap, function(timePointInfo) {
+    timePointInfo.stats = {};
+    timePointInfo.data = {};
+  });
+
+  _.each(timePointMap, function(timePointInfo, symbol) {
+
+    _.each(eData, function(expValue, rgdKey) {
+      timePointInfo.data[rgdKey] = expValue[symbol];
+    });
+    
+    //does all statistics work except for mean
+    timePointInfo.stats.max = _.max(valList[symbol]);
+    timePointInfo.stats.min = _.min(valList[symbol]);
+    timePointInfo.stats.mean = mean[symbol];
+  });
+
+  return eData;
 };
   /****** Network creation ******/
 // networkInfo [{},{},{}] => cytoInfo
@@ -133,7 +167,6 @@ var readNetworkData = function readNetworkData(networkInfo, rMap, eData) {
     links : cytoLinks
   };
 };
-
 
 async.waterfall([
   //makes Network request => network array & rgdKeys
@@ -183,35 +216,31 @@ async.waterfall([
   //gets and processes expression data
   function getExpressionData(networkInfo, rMap, callback) {
     var eData = {};
-    var eStats = {};
 
     $.get(urlObj.expressionData, function(resText) {
-      var expReturnVals = readExpressionData(resText);
-      eData = expReturnVals.eData;
-      eStats = expReturnVals.eStats;
+      eData = readExpressionData(resText);
 
       expData = eData; //GLOBALS
-      expStats = eStats;
 
     }, 'text')
 
     .done(function() {
       console.log('read expressions successfully');
-      callback(null, networkInfo, rMap, eData, eStats);
+      callback(null, networkInfo, rMap, eData);
     });
   },
   //process networkInfo
-  function readNetworkInfo(networkInfo, rMap, eData, eStats, callback) {
+  function readNetworkInfo(networkInfo, rMap, eData, callback) {
     var cInfo = {};
     
     cInfo = readNetworkData(networkInfo, rMap, eData);
     cytoInfo = cInfo; //GLOBAL
 
-    callback(null, rMap, eData, eStats, cInfo)
+    callback(null, rMap, eData, cInfo)
   }], 
 
   //waterfall callback
-  function completeReqs(err, rMap, eData, eStats, cInfo) {
+  function completeReqs(err, rMap, eData, cInfo) {
     if(err) {
       console.error('ERR: '+err.message);
     }
@@ -220,11 +249,3 @@ async.waterfall([
     renderCyto(cInfo);
   }
 );
-
-var timePointExists = function timePointExists(symbol) {
-  _.each(timePointsList, function(timePointInfo) {
-    if(timePointInfo.symbol === symbol)
-      return true;
-  });
-  return false;
-};

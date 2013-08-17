@@ -138,11 +138,11 @@ var renderCyto = function renderCyto(cytoVar) {
       });
 
       var timePointsBox = $$('#timePoints');
-      _.each(timePointsList, function(timePoint) {
+      _.each(timePointMap, function(timePointInfo, symbol) {
         var newTimePointBtn = document.createElement('div');
         newTimePointBtn.classList.add('timePoint');
-        newTimePointBtn.setAttribute('data-time', timePoint.symbol);
-        newTimePointBtn.innerText = timePoint.name;
+        newTimePointBtn.setAttribute('data-time', symbol);
+        newTimePointBtn.innerText = timePointInfo.name;
         timePoints.appendChild(newTimePointBtn);
       });
 
