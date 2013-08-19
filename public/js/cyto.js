@@ -147,7 +147,7 @@ var renderCyto = function renderCyto(cytoVar) {
       });
 
       //make sure not to have a comment as the first child
-      timePointsBox.firstChild.classList.add('timeSelect');
+      $$('.timePoint', timePointsBox).classList.add('timeSelect');
 
       //interactive styling for timepoint buttons
       //has to be here if timePoint will be abstracted
