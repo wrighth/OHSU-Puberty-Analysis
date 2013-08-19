@@ -48,6 +48,7 @@ var renderCyto = function renderCyto(cytoVar) {
       cLinks.push({data: link.data});
   });
 
+  //cytoscape options
   $('#cy').cytoscape({
     showOverlay: true,
     zoom: 3,
@@ -106,7 +107,7 @@ var renderCyto = function renderCyto(cytoVar) {
 
         var node = e.cyTarget; 
         var neighborhood = node.neighborhood().add(node);
-        var nodeInfo = rgdMap[node.id()]; //change this to use built in data
+        var nodeInfo = node.data(); //change this to use built in data
         
         msgBox.innerHTML = node.data('id') + "<span class='buffer'></span>";
         
@@ -141,8 +142,14 @@ var renderCyto = function renderCyto(cytoVar) {
         var node = e.cyTarget;
         node.css('background-color','purple');
 
+        var nodeInfo = node.data().nodeInfo;
+
         var hoverDiv = $$('#hoverDiv');
+
         hoverDiv.classList.remove('hide');
+        $$('#hovername', hoverDiv).innerText = 'Node Information: '+node.id();
+        $$('#ncbi', hoverDiv).innerHTML = "<a target='_blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a>";
+
         hoverDiv.style.top = (node.position('y'))+'px';
         hoverDiv.style.left = (node.position('x')+20+(window.innerWidth*0.05))+'px';
       });
@@ -153,38 +160,9 @@ var renderCyto = function renderCyto(cytoVar) {
         $$('#hoverDiv').classList.add('hide');
       });
 
-      var timePointsBox = $$('#timePoints');
-      _.each(timePointMap, function(timePointInfo, symbol) {
-        var newTimePointBtn = document.createElement('div');
-        newTimePointBtn.classList.add('timePoint');
-        newTimePointBtn.setAttribute('data-time', symbol);
-        newTimePointBtn.innerText = timePointInfo.name;
-        timePoints.appendChild(newTimePointBtn);
-      });
+      renderTimeButtons();
+      setUpSearchBar();
 
-      //make sure not to have a comment as the first child
-      $$('.timePoint', timePointsBox).classList.add('timeSelect');
-
-      //interactive styling for timepoint buttons
-      //has to be here if timePoint will be abstracted
-      var btns = $$$('.timePoint');
-      _.each(btns, function(btn) {
-        btn.addEventListener('click', function(event) {
-          var target = event.target;
-          //var expInfo = target.dataset.time;
-
-          if(!target.classList.contains('timeSelect')) {
-
-            //changing the color should be the last thing to do*/
-            $$('.timeSelect').classList.remove('timeSelect');
-            target.classList.add('timeSelect');
-
-            var timePoint = target.dataset.time;
-            core.getNewColors(timePoint);
-            console.log('got new colors');
-          }
-        });
-      });
     },
 
     layout: arborOptions
@@ -192,25 +170,63 @@ var renderCyto = function renderCyto(cytoVar) {
 };
 
 //SEARCH FUNCTIONALITY
-var search = $$('#search');
-search.addEventListener('input', function() {
-  var searchVal = search.value;
+var setUpSearchBar = function setUpSearchBar() {
+  var search = $$('#search');
+  search.addEventListener('input', function() {
+    var searchVal = search.value;
 
-  var resultsToFade = cy.filter(function(counter, ele) {
-    //startsWith supported by mixin to Object.prototype
-    if(!ele.id().startsWith(searchVal)) {
-      return ele;
-    }
-  });
-  var searchResults = cy.filter(function(counter, ele) {
-    //startsWith supported by mixin to Object.prototype
-    if(ele.id().startsWith(searchVal)) {
-      return ele;
-    }
-  });
+    var resultsToFade = cy.filter(function(counter, ele) {
+      //startsWith supported by mixin to Object.prototype
+      if(!ele.id().startsWith(searchVal)) {
+        return ele;
+      }
+    });
+    var searchResults = cy.filter(function(counter, ele) {
+      //startsWith supported by mixin to Object.prototype
+      if(ele.id().startsWith(searchVal)) {
+        return ele;
+      }
+    });
 
-  //clear results
-  searchResults.removeClass('faded');
-  cy.edges().addClass('faded');
-  resultsToFade.addClass('faded');
-});
+    //clear results
+    searchResults.removeClass('faded');
+    cy.edges().addClass('faded');
+    resultsToFade.addClass('faded');
+  });
+};
+
+//dynamically renders buttons
+var renderTimeButtons = function renderTimeButtons() {
+  var timePointsBox = $$('#timePoints');
+  _.each(timePointMap, function(timePointInfo, symbol) {
+    var newTimePointBtn = document.createElement('div');
+    newTimePointBtn.classList.add('timePoint');
+    newTimePointBtn.setAttribute('data-time', symbol);
+    newTimePointBtn.innerText = timePointInfo.name;
+    timePoints.appendChild(newTimePointBtn);
+  });    
+
+  $$('.timePoint', timePointsBox).classList.add('timeSelect');
+
+  //interactive styling for timepoint buttons
+  //has to be here if timePoint will be abstracted
+  var btns = $$$('.timePoint');
+  _.each(btns, function(btn) {
+    btn.addEventListener('click', function(event) {
+      var target = event.target;
+      //var expInfo = target.dataset.time;
+
+      if(!target.classList.contains('timeSelect')) {
+
+        //changing the color should be the last thing to do*/
+        $$('.timeSelect').classList.remove('timeSelect');
+        target.classList.add('timeSelect');
+
+        var timePoint = target.dataset.time;
+        core.getNewColors(timePoint);
+        console.log('got new colors');
+      }
+    });
+  });    
+};
+
