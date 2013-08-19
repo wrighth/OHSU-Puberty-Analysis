@@ -1,36 +1,73 @@
+cyWidth = 90%
+cySideMargin = 5%
+
 *
   margin 0
   padding 0
 
 html
-  background-color white
+  background-color #cec7ec //d1c176
   //darker color?
 
 body
   font-family Helvetica, sans-serif
   font-size 14px
 
-#msg
-  background-color rgb(150,150,150)
+#msgBox
+  background-color #d1c176
   border-bottom 2px solid black
-  padding 5px
+  display inline-block
+  margin-bottom 10px
+  max-width 100%
+  width 100%
+
+  #msg
+    float left
+
+  #search
+    padding 8px
+    margin 10px 20px
+    float right
 
 #cy
-  border 1px solid black
-  display block
+  background-color darkgrey
+  display inline-block
   font-family helvetica, arial, sans-serif
   font-size 14px
-  height 80%
-  left 0px
-  line-height normal
-  position absolute
-  bottom 0px
-  width 1280px
+  min-height 80vh
+  min-width cyWidth
+  margin 20px cySideMargin
+
+#controls
+  min-width cyWidth
+  margin 10px cySideMargin
+  padding 5px
+
+.control
+  margin 5px
+
+  h4
+    clear both
+    display block
+    text-align center
+    font-family Tacoma, Helvetica, sans-serif
+    font-size 1.0rem
+
+.layoutControl
+  width 65px
+  height 20px
+  border 1px solid blue
+  color white
+  font-size 12px
+  background-color #52A5FF
+  display inline-block
+  padding 2px
+  cursor pointer
+  margin 5px 2.5px
 
 //TIME POINTS
 #timePoints
   display inline-block
-  border 2px solid purple
 
 .timePoint
   width 100px
@@ -53,14 +90,15 @@ button
   display block
 
 .zoom
-  border 1px solid blue
   padding 1px
   margin 5px
-  display none /*inline-block - not being developed now*/
+  display inline-block // - not being developed now
+
+  button
+    display inline-block
 
 #expControls
-  border 1px solid black
-  display none /*inline-block - not being developed now*/
+  display inline-block // - not being developed now*/
 
 input
   padding 5px
@@ -72,8 +110,8 @@ input
   border 1px solid black
 
 #layoutControls
-  display none
-  overflow hidden
+  display inline-block//none
+  //overflow hidden
 
 .buffer 
   padding 5px 15px
