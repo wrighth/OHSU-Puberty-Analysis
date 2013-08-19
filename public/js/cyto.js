@@ -144,7 +144,7 @@ var renderCyto = function renderCyto(cytoVar) {
         var hoverDiv = $$('#hoverDiv');
         hoverDiv.classList.remove('hide');
         hoverDiv.style.top = (node.position('y'))+'px';
-        hoverDiv.style.left = (node.position('x')+20)+'px';
+        hoverDiv.style.left = (node.position('x')+20+(window.innerWidth*0.05))+'px';
       });
 
       cy.on('mouseout', 'node', function(e) {
