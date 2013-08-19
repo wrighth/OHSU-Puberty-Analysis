@@ -1,6 +1,7 @@
 //-for zooming
 mixin zoom
-    .zoom
+    .zoom.control 
+        h4 Zoom Controls
         button#zoomIn   +  
         button#zoomOut   -  
 
@@ -13,37 +14,35 @@ html(lang="en")
     link(type="text/css",rel="stylesheet",href="/css/style.css")
 
   body
-    #cy
-    #msg Node Information
-    input#search(placeholder="Search the Network",autofocus) 
+    #msgBox
+        #msg Node Information
+        input#search(placeholder="Search the Network",autofocus) 
     //search for a specific gene
 
-    button#redo Re-render
+    #controls
+        #timePoints.control 
+            h4 Choose a Time Point
 
-    #timePoints
-        //-
-            for each timePoint in timePoints
-            .timePoint.timeSelect(data-time="ej") Early Juvenile
-            .timePoint(data-time="lj") Late Juvenile
-            .timePoint(data-time="lp") Late Puberty
+        mixin zoom
 
-    mixin zoom
+        #expControls.control 
+            h4 Value Controls
+            input#expMax(placeholder="Set Max")
+            input#expMin(placeholder="Set Min")
+            input#midPointControl(placeholder="Set New Center Point")
+        //choose the range of expression values to see
 
-    #expControls
-        input#expMax(placeholder="Set Max")
-        input#expMin(placeholder="Set Min")
-        input#midPointControl(placeholder="Set New Center Point")
-    //choose the range of expression values to see
+        //hide until implemented
+        #expGradient
 
-    //hide until implemented
-    #expGradient
+        //hide until needed
+        #layoutControls.control 
+            h4 Custom Layouts
+            div.layoutControl Save
+            div.layoutControl Upload
+            div.layoutControl All Layouts
 
-    //hide until needed
-    #layoutControls
-        ul
-            li Save
-            li Upload
-            li Default Layouts
+    #cy
 
     script(src='/js/libs/async.min.js')
     script(src="/js/libs/cytoscape.min.js")
