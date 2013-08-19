@@ -137,6 +137,22 @@ var renderCyto = function renderCyto(cytoVar) {
         msgBox.innerText = link.data('source')+' =['+link.data('type')+']=>'+link.data('target');
       });
 
+      cy.on('mouseover', 'node', function(e) {
+        var node = e.cyTarget;
+        node.css('background-color','purple');
+
+        var hoverDiv = $$('#hoverDiv');
+        hoverDiv.classList.remove('hide');
+        hoverDiv.style.top = (node.position('y'))+'px';
+        hoverDiv.style.left = (node.position('x')+20)+'px';
+      });
+
+      cy.on('mouseout', 'node', function(e) {
+        var node = e.cyTarget;
+        node.css('background-color','red');
+        $$('#hoverDiv').classList.add('hide');
+      });
+
       var timePointsBox = $$('#timePoints');
       _.each(timePointMap, function(timePointInfo, symbol) {
         var newTimePointBtn = document.createElement('div');
@@ -164,7 +180,6 @@ var renderCyto = function renderCyto(cytoVar) {
             target.classList.add('timeSelect');
 
             var timePoint = target.dataset.time;
-            console.log(timePoint);
             core.getNewColors(timePoint);
             console.log('got new colors');
           }
