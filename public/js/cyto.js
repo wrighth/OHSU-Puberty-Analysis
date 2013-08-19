@@ -58,7 +58,7 @@ var renderCyto = function renderCyto(cytoVar) {
     style: cytoscape.stylesheet()
       .selector('core')
         .css({
-          'panning-cursor': 'crosshair' //what does this do?
+    'panning-cursor': 'crosshair' //what does this do?
         })
       .selector('node')
         .css({
@@ -107,19 +107,6 @@ var renderCyto = function renderCyto(cytoVar) {
 
         var node = e.cyTarget; 
         var neighborhood = node.neighborhood().add(node);
-        var nodeInfo = node.data(); //change this to use built in data
-        
-        msgBox.innerHTML = node.data('id') + "<span class='buffer'></span>";
-        
-        if(nodeInfo.human) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><span class='buffer'>";
-        }
-        if(nodeInfo.rat) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.rat.entrezGeneId + "'>Additional Rat Information</a><span class='buffer'>";
-        }
-        if(nodeInfo.mouse) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.mouse.entrezGeneId + "'>Additional Mouse Information</a><span class='buffer'>";
-        }
 
         cy.elements().addClass('faded');
         neighborhood.removeClass('faded');
@@ -138,30 +125,9 @@ var renderCyto = function renderCyto(cytoVar) {
         msgBox.innerText = link.data('source')+' =['+link.data('type')+']=>'+link.data('target');
       });
 
-      cy.on('mouseover', 'node', function(e) {
-        var node = e.cyTarget;
-        node.css('background-color','purple');
-
-        var nodeInfo = node.data().nodeInfo;
-
-        var hoverDiv = $$('#hoverDiv');
-
-        hoverDiv.classList.remove('hide');
-        $$('#hovername', hoverDiv).innerText = 'Node Information: '+node.id();
-        $$('#ncbi', hoverDiv).innerHTML = "<a target='_blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a>";
-
-        hoverDiv.style.top = (node.position('y'))+'px';
-        hoverDiv.style.left = (node.position('x')+20+(window.innerWidth*0.05))+'px';
-      });
-
-      cy.on('mouseout', 'node', function(e) {
-        var node = e.cyTarget;
-        node.css('background-color','red');
-        $$('#hoverDiv').classList.add('hide');
-      });
-
       renderTimeButtons();
       setUpSearchBar();
+      setUpHoverLogic();
 
     },
 
@@ -230,3 +196,77 @@ var renderTimeButtons = function renderTimeButtons() {
   });    
 };
 
+var setUpHoverLogic = function setUpHoverLogic() {
+  var hoverDiv = $$('#hoverDiv');
+  var sameNodeHover = true;
+
+  hoverDiv.addEventListener('mouseover', function() {
+    cy.off('mouseover', 'node', nodeHoverHandler);
+  });
+
+  hoverDiv.addEventListener('mouseout', function() {
+    cy.on('mouseover', 'node', nodeHoverHandler);
+  });
+
+  cy.on('mouseover', 'node', nodeHoverHandler);
+
+  cy.on('drag', 'node', function(e) {
+    cy.off('mouseover', 'node', nodeHoverHandler);
+    hoverDiv.classList.add('hide');
+  });  
+
+  cy.on('free', 'node', function(e) {
+    cy.on('mouseover', 'node', nodeHoverHandler);
+  });
+
+  cy.on('mouseout', 'node', function(e) {
+    var node = e.cyTarget;
+    sameNodeHover = false;
+
+    hoverController(2000);
+  });
+
+  $$('#close').addEventListener('click', function(e) {
+    hoverDiv.classList.add('hide');
+  });
+};
+
+var nodeHoverHandler = function nodeHoverHandler(e) {
+  var node = e.cyTarget;
+  var nodeInfo = node.data().nodeInfo;
+  sameNodeHover = true;
+
+  setTimeout(function() {
+    if(sameNodeHover) {
+      hoverDiv.style.top = (node.position('y'))+'px';
+      hoverDiv.style.left = (node.position('x')+10+(window.innerWidth*0.05))+'px';
+
+      $$('h3', hoverDiv).innerText = 'Node Information: '+node.id();
+        
+      var ncbiInfo = $$('#ncbi', hoverDiv);
+
+      if(nodeInfo.human) {
+        ncbiInfo.innerHTML = "<a target='blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><br>";
+      }
+      if(nodeInfo.rat) {
+        ncbiInfo.innerHTML += "<a target='blank' href='" + geneInfoLink + nodeInfo.rat.entrezGeneId + "'>Additional Rat Information</a><br>";
+      }
+      if(nodeInfo.mouse) {
+        ncbiInfo.innerHTML += "<a target='blank' href='" + geneInfoLink + nodeInfo.mouse.entrezGeneId + "'>Additional Mouse Information</a>";
+      }
+      hoverDiv.classList.remove('hide');
+    }
+  }, 1500);
+};
+
+var hoverController = function hoverController(delay) {
+  delay = delay || 1500;
+  setTimeout(function() {
+    if($$('#hoverDiv:hover')) {
+      hoverController(delay);
+    }
+    else {
+      hoverDiv.classList.add('hide');
+    }
+  }, 1000);
+};
