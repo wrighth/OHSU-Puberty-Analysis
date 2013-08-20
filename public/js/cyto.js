@@ -2,6 +2,7 @@ var $$ = function(sel, el) {return (el || document).querySelector(sel)};
 var $$$ = function(sel, el) {return (el || document).querySelectorAll(sel)};
 var msgBox = $$('#msg');
 var geneInfoLink = 'http://www.ncbi.nlm.nih.gov/gene/';
+var sameNodeHover = {}; //saves state of indiv nodes when hover'd
 
 var arborOptions = {
   name: 'arbor',
@@ -198,7 +199,6 @@ var renderTimeButtons = function renderTimeButtons() {
 
 var setUpHoverLogic = function setUpHoverLogic() {
   var hoverDiv = $$('#hoverDiv');
-  var sameNodeHover = true;
 
   hoverDiv.addEventListener('mouseover', function() {
     cy.off('mouseover', 'node', nodeHoverHandler);
@@ -221,7 +221,7 @@ var setUpHoverLogic = function setUpHoverLogic() {
 
   cy.on('mouseout', 'node', function(e) {
     var node = e.cyTarget;
-    sameNodeHover = false;
+    sameNodeHover[node.id()] = false;
 
     hoverController(2000);
   });
@@ -234,10 +234,10 @@ var setUpHoverLogic = function setUpHoverLogic() {
 var nodeHoverHandler = function nodeHoverHandler(e) {
   var event = e.originalEvent;
   var node = e.cyTarget;
-  sameNodeHover = true;
+  sameNodeHover[node.id()] = true;
 
   setTimeout(function() {
-    if(sameNodeHover) {
+    if(sameNodeHover[node.id()]) {
       hoverDiv.style.top = (node.position('y'))+'px';
       var xOffset = 0.05*window.innerWidth; //cy is 90% min-width
       if(event.x < window.innerWidth/2)
