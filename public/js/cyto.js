@@ -234,7 +234,6 @@ var setUpHoverLogic = function setUpHoverLogic() {
 var nodeHoverHandler = function nodeHoverHandler(e) {
   var event = e.originalEvent;
   var node = e.cyTarget;
-  var nodeInfo = node.data().nodeInfo;
   sameNodeHover = true;
 
   setTimeout(function() {
@@ -247,22 +246,53 @@ var nodeHoverHandler = function nodeHoverHandler(e) {
         hoverDiv.style.left = node.position('x')-265+xOffset+'px';
       }
 
-      $$('h3', hoverDiv).innerText = 'Node Information: '+node.id();
-        
-      var ncbiInfo = $$('#ncbi', hoverDiv);
+      updateHoverDivInfo(node);
 
-      if(nodeInfo.human) {
-        ncbiInfo.innerHTML = "<a target='blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><br>";
-      }
-      if(nodeInfo.rat) {
-        ncbiInfo.innerHTML += "<a target='blank' href='" + geneInfoLink + nodeInfo.rat.entrezGeneId + "'>Additional Rat Information</a><br>";
-      }
-      if(nodeInfo.mouse) {
-        ncbiInfo.innerHTML += "<a target='blank' href='" + geneInfoLink + nodeInfo.mouse.entrezGeneId + "'>Additional Mouse Information</a>";
-      }
       hoverDiv.classList.remove('hide');
     }
   }, 1500);
+};
+
+//updates text and links inside the hoverDiv
+var updateHoverDivInfo = function updateHoverDivInfo(node) {
+  var nodeInfo = node.data().nodeInfo;
+  var hoverDiv = $$('#hoverDiv');
+
+  $$('h3', hoverDiv).innerText = 'Node Information: '+node.id();
+        
+  var ncbiInfo = $$('#ncbi', hoverDiv);
+
+  if(nodeInfo.human) {
+    ncbiInfo.innerHTML = "<a target='blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><br>";
+  }
+  if(nodeInfo.rat) {
+    ncbiInfo.innerHTML += "<a target='blank' href='" + geneInfoLink + nodeInfo.rat.entrezGeneId + "'>Additional Rat Information</a><br>";
+  }
+  if(nodeInfo.mouse) {
+    ncbiInfo.innerHTML += "<a target='blank' href='" + geneInfoLink + nodeInfo.mouse.entrezGeneId + "'>Additional Mouse Information</a>";
+  }
+
+  //update node type
+  $$('#nodeType', hoverDiv).innerText = node.data('type');
+
+  //update our notes link
+
+  //update blurb - maybe scrape form wordpress site
+
+  var neighbors = document.createElement('ul');
+  neighbors.id = 'neighbors';
+  hoverDiv.replaceChild(neighbors, $$('#neighbors', hoverDiv));
+
+  var neighborsHeader = document.createElement('h3');
+  neighborsHeader.innerText = 'Neighbors';
+
+  neighbors.appendChild(neighborsHeader);
+
+  _.each(node.neighborhood('node'), function(neighborNode) {
+    var neighbor = document.createElement('li');
+    neighbor.innerText = neighborNode.id();
+    neighbors.appendChild(neighbor);
+  });
 };
 
 var hoverController = function hoverController(delay) {
