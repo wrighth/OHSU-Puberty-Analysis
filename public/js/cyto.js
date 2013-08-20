@@ -235,9 +235,11 @@ var nodeHoverHandler = function nodeHoverHandler(e) {
   var event = e.originalEvent;
   var node = e.cyTarget;
   sameNodeHover[node.id()] = true;
+  //only gets the current node
+  var fadedNode = cy.$("node.faded[id='"+node.id()+"']");
 
   setTimeout(function() {
-    if(sameNodeHover[node.id()]) {
+    if(fadedNode.size() == 0 && sameNodeHover[node.id()]) {
       hoverDiv.style.top = (node.position('y'))+'px';
       var xOffset = 0.05*window.innerWidth; //cy is 90% min-width
       if(event.x < window.innerWidth/2)
