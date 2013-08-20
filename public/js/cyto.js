@@ -232,6 +232,7 @@ var setUpHoverLogic = function setUpHoverLogic() {
 };
 
 var nodeHoverHandler = function nodeHoverHandler(e) {
+  var event = e.originalEvent;
   var node = e.cyTarget;
   var nodeInfo = node.data().nodeInfo;
   sameNodeHover = true;
@@ -239,7 +240,12 @@ var nodeHoverHandler = function nodeHoverHandler(e) {
   setTimeout(function() {
     if(sameNodeHover) {
       hoverDiv.style.top = (node.position('y'))+'px';
-      hoverDiv.style.left = (node.position('x')+10+(window.innerWidth*0.05))+'px';
+      var xOffset = 0.05*window.innerWidth; //cy is 90% min-width
+      if(event.x < window.innerWidth/2)
+        hoverDiv.style.left = node.position('x')+xOffset+20+'px';
+      else {
+        hoverDiv.style.left = node.position('x')-265+xOffset+'px';
+      }
 
       $$('h3', hoverDiv).innerText = 'Node Information: '+node.id();
         
