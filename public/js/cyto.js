@@ -154,10 +154,12 @@ var setUpSearchBar = function setUpSearchBar() {
       }
     });
 
-    //clear results
     searchResults.removeClass('faded');
     cy.edges().addClass('faded');
     resultsToFade.addClass('faded');
+    if(searchVal == '') {
+      cy.edges().removeClass('faded');
+    }
   });
 };
 
@@ -284,7 +286,7 @@ var updateHoverDivInfo = function updateHoverDivInfo(node) {
   hoverDiv.replaceChild(neighbors, $$('#neighbors', hoverDiv));
 
   var neighborsHeader = document.createElement('h3');
-  neighborsHeader.innerText = 'Neighbors';
+  neighborsHeader.innerText = 'First Neighbors';
 
   neighbors.appendChild(neighborsHeader);
 
