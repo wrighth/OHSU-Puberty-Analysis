@@ -118,6 +118,47 @@ var colorsFromR = function colorsFromR(readFrom, breaks, callback) {
   });
 };
 
+app.post('/resources/layouts', function(req, res) {
+  fs.readFile('data/basakData.csv', 'utf-8', function(err, file) {
+    if(err) throw new Error();
+    console.log('noerror');
+    var newPositions = {};
+    var hiX = 0; 
+    var loX = 0;
+    var hiY = 0; 
+    var loY = 0;
+
+    _.each(file.replace(/\r/g,'').split(/\n/), function(line) {
+      var data = line.split(',');
+      var x = parseInt(data[1]);
+      var y = parseInt(data[2]);
+
+      hiX = (x > hiX)? x : hiX;
+      loX = (x < loX)? x : loX;
+      hiY = (y > hiY)? y : hiY;
+      loY = (y < loY)? y : loY;
+
+      newPositions[data[0].toLowerCase()] = {x:x, y:y}
+    });
+
+    var rangeX = Math.abs(loX)+Math.abs(hiX);
+    var rangeY = Math.abs(loY)+Math.abs(hiY);
+
+    _.each(newPositions, function(pos) {
+      pos.x -= loX; //lo's => 0
+      pos.y -= loY;
+
+      //hi's are now the range
+      pos.x /= rangeX; //creates a decimal that i can use
+      pos.y /= rangeY;
+    });
+
+    console.log(newPositions);
+
+    res.json(newPositions);
+  });
+});
+
 //returns the rgd Info for the rgdKeys provided in the req
 app.post('/resources/rgd', function(req, res) {
   var rgdReq = req.body.rgdReq || req.body.rgdQuery || req.body.rgdRequest;
