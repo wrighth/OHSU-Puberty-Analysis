@@ -193,7 +193,6 @@ var renderTimeButtons = function renderTimeButtons() {
 
         var timePoint = target.dataset.time;
         core.getNewColors(timePoint);
-        console.log('got new colors');
       }
     });
   });    

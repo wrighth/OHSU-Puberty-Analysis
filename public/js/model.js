@@ -54,10 +54,7 @@ Core.prototype.getNewColors = function(timePoint) {
       var pointValue = timePointMap[timePoint].data[node.id()];
       var nodeId = node.id();
 
-      //calculate the color the the point
-      //var colorAtPoint = processExpression(pointValue, timePoint);
-      colorReqMap[nodeId] = pointValue;//colorAtPoint;
-      //console.log(node.id() +' is '+ colorAtPoint);
+      colorReqMap[nodeId] = pointValue;
     });
 
     $.post(urlObj.colorData, {expInfo: colorReqMap}, function(newColorData) {
@@ -66,7 +63,6 @@ Core.prototype.getNewColors = function(timePoint) {
         alert('no colors to change to');
       _.each(cy.nodes(), function(node) {
         node.css('background-color', newColorData[node.id()]);
-        //console.log('set '+node.id()+' to '+newColorData[node.id()]);
       });
     });  
 
@@ -80,6 +76,7 @@ var core = new Core();
 /*********************************\
          Color Management
 \*********************************/
+//THIS IS NOW TAKEN CARE OF BY R - may delete
 
 var processExpression = function processExpression(val, timePoint) {
   var decimal = (val - expStats.min[timePoint])/(expStats.max[timePoint] - expStats.min[timePoint]);
@@ -133,7 +130,6 @@ var lowerCase = function toLower(arr) {
 var CytoNode = function CytoNode(id, nodeInfo, expression, type) {
   var classList = [type];
 
-  //console.log(id, expression);
   this.classes = classList.join(' ');
   this.data = {
     id : id,
