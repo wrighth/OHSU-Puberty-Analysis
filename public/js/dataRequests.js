@@ -74,7 +74,6 @@ var readExpressionData = function readExpressionData(resText) {
       var numTimesToRun = (pts.length -1 <= timePointsList.length)? pts.length : timePointsList.length +1;
       for(var i = 1; i < numTimesToRun; i++) {
         var currentTimePoint = timePointsList[i-1].symbol;
-        console.log(currentTimePoint);
 
         //check if the key is wanted
         if(timePointMap[currentTimePoint]) {
@@ -154,7 +153,6 @@ var readNetworkData = function readNetworkData(networkInfo, rMap, eData) {
     cytoLinks.push(new CytoLink(startNodeId, endNodeId, lineInfo.linkType));
   });
 
-  console.log('created cytoLinks');
     _.each(nodesObj, function(cytoNode) {
       cytoNodes.push(cytoNode);
     });
@@ -206,7 +204,6 @@ async.waterfall([
     }, 'text')
 
     .done(function() {
-      console.log('rgdMap ready');
       rgdMap = rMap;    //set rgdMap to the map
 
       callback(null, networkInfo, rMap);
@@ -222,7 +219,6 @@ async.waterfall([
     }, 'text')
 
     .done(function() {
-      console.log('read expressions successfully');
       callback(null, networkInfo, rMap, eData);
     });
   },

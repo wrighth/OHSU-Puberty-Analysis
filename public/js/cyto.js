@@ -2,6 +2,7 @@ var $$ = function(sel, el) {return (el || document).querySelector(sel)};
 var $$$ = function(sel, el) {return (el || document).querySelectorAll(sel)};
 var msgBox = $$('#msg');
 var geneInfoLink = 'http://www.ncbi.nlm.nih.gov/gene/';
+var sameNodeHover = {}; //saves state of indiv nodes when hover'd
 
 var arborOptions = {
   name: 'arbor',
@@ -48,6 +49,7 @@ var renderCyto = function renderCyto(cytoVar) {
       cLinks.push({data: link.data});
   });
 
+  //cytoscape options
   $('#cy').cytoscape({
     showOverlay: true,
     zoom: 3,
@@ -57,7 +59,7 @@ var renderCyto = function renderCyto(cytoVar) {
     style: cytoscape.stylesheet()
       .selector('core')
         .css({
-          'panning-cursor': 'crosshair' //what does this do?
+    'panning-cursor': 'crosshair' //what does this do?
         })
       .selector('node')
         .css({
@@ -106,19 +108,6 @@ var renderCyto = function renderCyto(cytoVar) {
 
         var node = e.cyTarget; 
         var neighborhood = node.neighborhood().add(node);
-        var nodeInfo = rgdMap[node.id()]; //change this to use built in data
-        
-        msgBox.innerHTML = node.data('id') + "<span class='buffer'></span>";
-        
-        if(nodeInfo.human) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><span class='buffer'>";
-        }
-        if(nodeInfo.rat) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.rat.entrezGeneId + "'>Additional Rat Information</a><span class='buffer'>";
-        }
-        if(nodeInfo.mouse) {
-          msgBox.innerHTML += "<a target='_blank' href='" + geneInfoLink + nodeInfo.mouse.entrezGeneId + "'>Additional Mouse Information</a><span class='buffer'>";
-        }
 
         cy.elements().addClass('faded');
         neighborhood.removeClass('faded');
@@ -137,39 +126,10 @@ var renderCyto = function renderCyto(cytoVar) {
         msgBox.innerText = link.data('source')+' =['+link.data('type')+']=>'+link.data('target');
       });
 
-      var timePointsBox = $$('#timePoints');
-      _.each(timePointMap, function(timePointInfo, symbol) {
-        var newTimePointBtn = document.createElement('div');
-        newTimePointBtn.classList.add('timePoint');
-        newTimePointBtn.setAttribute('data-time', symbol);
-        newTimePointBtn.innerText = timePointInfo.name;
-        timePoints.appendChild(newTimePointBtn);
-      });
+      renderTimeButtons();
+      setUpSearchBar();
+      setUpHoverLogic();
 
-      //make sure not to have a comment as the first child
-      timePointsBox.firstChild.classList.add('timeSelect');
-
-      //interactive styling for timepoint buttons
-      //has to be here if timePoint will be abstracted
-      var btns = $$$('.timePoint');
-      _.each(btns, function(btn) {
-        btn.addEventListener('click', function(event) {
-          var target = event.target;
-          //var expInfo = target.dataset.time;
-
-          if(!target.classList.contains('timeSelect')) {
-
-            //changing the color should be the last thing to do*/
-            $$('.timeSelect').classList.remove('timeSelect');
-            target.classList.add('timeSelect');
-
-            var timePoint = target.dataset.time;
-            console.log(timePoint);
-            core.getNewColors(timePoint);
-            console.log('got new colors');
-          }
-        });
-      });
     },
 
     layout: arborOptions
@@ -177,25 +137,243 @@ var renderCyto = function renderCyto(cytoVar) {
 };
 
 //SEARCH FUNCTIONALITY
-var search = $$('#search');
-search.addEventListener('input', function() {
-  var searchVal = search.value;
+var setUpSearchBar = function setUpSearchBar() {
+  var search = $$('#search');
+  search.addEventListener('input', function() {
+    var searchVal = search.value;
 
-  var resultsToFade = cy.filter(function(counter, ele) {
-    //startsWith supported by mixin to Object.prototype
-    if(!ele.id().startsWith(searchVal)) {
-      return ele;
+    var resultsToFade = cy.filter(function(counter, ele) {
+      //startsWith supported by mixin to Object.prototype
+      if(!ele.id().startsWith(searchVal)) {
+        return ele;
+      }
+    });
+    var searchResults = cy.filter(function(counter, ele) {
+      //startsWith supported by mixin to Object.prototype
+      if(ele.id().startsWith(searchVal)) {
+        return ele;
+      }
+    });
+
+    searchResults.removeClass('faded');
+    cy.edges().addClass('faded');
+    resultsToFade.addClass('faded');
+    if(searchVal == '') {
+      cy.edges().removeClass('faded');
     }
   });
-  var searchResults = cy.filter(function(counter, ele) {
-    //startsWith supported by mixin to Object.prototype
-    if(ele.id().startsWith(searchVal)) {
-      return ele;
-    }
+};
+
+//dynamically renders buttons
+var renderTimeButtons = function renderTimeButtons() {
+  var timePointsBox = $$('#timePoints');
+  _.each(timePointMap, function(timePointInfo, symbol) {
+    var newTimePointBtn = document.createElement('div');
+    newTimePointBtn.classList.add('timePoint');
+    newTimePointBtn.setAttribute('data-time', symbol);
+    newTimePointBtn.innerText = timePointInfo.name;
+    timePoints.appendChild(newTimePointBtn);
+  });    
+
+  $$('.timePoint', timePointsBox).classList.add('timeSelect');
+
+  //interactive styling for timepoint buttons
+  //has to be here if timePoint will be abstracted
+  var btns = $$$('.timePoint');
+  _.each(btns, function(btn) {
+    btn.addEventListener('click', function(event) {
+      var target = event.target;
+      //var expInfo = target.dataset.time;
+
+      if(!target.classList.contains('timeSelect')) {
+
+        //changing the color should be the last thing to do*/
+        $$('.timeSelect').classList.remove('timeSelect');
+        target.classList.add('timeSelect');
+
+        var timePoint = target.dataset.time;
+        core.getNewColors(timePoint);
+      }
+    });
+  });    
+};
+
+var setUpHoverLogic = function setUpHoverLogic() {
+  var hoverDiv = $$('#hoverDiv');
+
+  hoverDiv.addEventListener('mouseover', function() {
+    cy.off('mouseover', 'node', nodeHoverHandler);
   });
 
-  //clear results
-  searchResults.removeClass('faded');
-  cy.edges().addClass('faded');
-  resultsToFade.addClass('faded');
+  hoverDiv.addEventListener('mouseout', function() {
+    cy.on('mouseover', 'node', nodeHoverHandler);
+  });
+
+  cy.on('mouseover', 'node', nodeHoverHandler);
+
+  cy.on('drag', 'node', function(e) {
+    cy.off('mouseover', 'node', nodeHoverHandler);
+    hoverDiv.classList.add('hide');
+  });  
+
+  cy.on('free', 'node', function(e) {
+    cy.on('mouseover', 'node', nodeHoverHandler);
+  });
+
+  cy.on('mouseout', 'node', function(e) {
+    var node = e.cyTarget;
+    sameNodeHover[node.id()] = false;
+
+    hoverController(2000);
+  });
+
+  $$('#close').addEventListener('click', function(e) {
+    hoverDiv.classList.add('hide');
+  });
+};
+
+var nodeHoverHandler = function nodeHoverHandler(e) {
+  var event = e.originalEvent;
+  var node = e.cyTarget;
+  sameNodeHover[node.id()] = true;
+  //only gets the current node
+  var fadedNode = cy.$("node.faded[id='"+node.id()+"']");
+
+  setTimeout(function() {
+    if(fadedNode.size() == 0 && sameNodeHover[node.id()]) {
+      hoverDiv.style.top = (node.position('y'))+'px';
+      var xOffset = 0.05*window.innerWidth; //cy is 90% min-width
+      if(event.x < window.innerWidth/2)
+        hoverDiv.style.left = node.position('x')+xOffset+20+'px';
+      else {
+        hoverDiv.style.left = node.position('x')-265+xOffset+'px';
+      }
+
+      updateHoverDivInfo(node);
+
+      hoverDiv.classList.remove('hide');
+    }
+  }, 1500);
+};
+
+//updates text and links inside the hoverDiv
+var updateHoverDivInfo = function updateHoverDivInfo(node) {
+  var nodeInfo = node.data().nodeInfo;
+  var hoverDiv = $$('#hoverDiv');
+
+  $$('h3', hoverDiv).innerText = 'Node Information: '+node.id();
+        
+  var ncbiInfo = $$('#ncbi', hoverDiv);
+
+  if(nodeInfo.human) {
+    ncbiInfo.innerHTML = "<a target='blank' href='" + geneInfoLink + nodeInfo.human.entrezGeneId + "'>Additional Human Information</a><br>";
+  }
+  if(nodeInfo.rat) {
+    ncbiInfo.innerHTML += "<a target='blank' href='" + geneInfoLink + nodeInfo.rat.entrezGeneId + "'>Additional Rat Information</a><br>";
+  }
+  if(nodeInfo.mouse) {
+    ncbiInfo.innerHTML += "<a target='blank' href='" + geneInfoLink + nodeInfo.mouse.entrezGeneId + "'>Additional Mouse Information</a>";
+  }
+
+  //update node type
+  $$('#nodeType', hoverDiv).innerText = node.data('type');
+
+  //update our notes link
+
+  //update blurb - maybe scrape form wordpress site
+
+  var neighbors = document.createElement('ul');
+  neighbors.id = 'neighbors';
+  hoverDiv.replaceChild(neighbors, $$('#neighbors', hoverDiv));
+
+  var neighborsHeader = document.createElement('h3');
+  neighborsHeader.innerText = 'First Neighbors';
+
+  neighbors.appendChild(neighborsHeader);
+
+  _.each(node.neighborhood('node'), function(neighborNode) {
+    var neighbor = document.createElement('li');
+    neighbor.innerText = neighborNode.id();
+    neighbors.appendChild(neighbor);
+  });
+};
+
+var hoverController = function hoverController(delay) {
+  delay = delay || 1500;
+  setTimeout(function() {
+    if($$('#hoverDiv:hover')) {
+      hoverController(delay);
+    }
+    else {
+      hoverDiv.classList.add('hide');
+    }
+  }, 1000);
+};
+
+//LAYOUT CONTROLS
+$$('#upload-layout').addEventListener('click', function uploadAndShowLayout() {
+  cy.off('mouseover','nodes', nodeHoverHandler);
+  $$('#cover-box').classList.remove('hide');
 });
+
+//called by the html on file change
+var changeLayout = function changeLayout() {
+  var upload = $$('input[type=file]')
+  var reader = new FileReader();
+
+  reader.addEventListener('load', function() {
+    var xmlString = reader.result;
+    var nodeArray = x2js.xml_str2json(xmlString).graph.node;
+
+    var newPositions = {};
+    var hiX = 0; 
+    var loX = 0;
+    var hiY = 0; 
+    var loY = 0;
+
+    _.each(nodeArray, function(node) {
+      var x = parseInt(node.graphics._x);
+      var y = parseInt(node.graphics._y);
+
+      hiX = (x > hiX)? x : hiX;
+      loX = (x < loX)? x : loX;
+      hiY = (y > hiY)? y : hiY;
+      loY = (y < loY)? y : loY;
+
+      newPositions[node._label.toLowerCase()] = {x:x, y:y}
+    });
+
+    var rangeX = Math.abs(loX)+Math.abs(hiX);
+    var rangeY = Math.abs(loY)+Math.abs(hiY);
+
+    _.each(newPositions, function(pos) {
+      pos.x -= loX; //lo's => 0
+      pos.y -= loY;
+
+      //hi's are now the range
+      pos.x /= rangeX; //creates a decimal that i can use
+      pos.y /= rangeY;
+    });
+
+    layout(newPositions); //re-render nodes
+    $$('#cover-box').classList.add('hide');
+    cy.on('mouseover','nodes', nodeHoverHandler);
+  });
+
+  reader.readAsText(upload.files[0]);
+};
+
+//close cover
+$$('#close-coverBox').addEventListener('click', function(e) {
+  $$('#cover-box').classList.add('hide');
+});
+
+var layout = function layout(data) {
+  var screenW = 0.9*innerWidth; 
+  var screenH = 0.65*innerHeight;
+  _.each(data, function(pos, id) {
+    cy.filter("node[id='"+id+"']")
+      .position('x',pos.x*screenW)
+      .position('y', pos.y*screenH)
+  });
+};
