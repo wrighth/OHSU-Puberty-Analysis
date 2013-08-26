@@ -155,10 +155,12 @@ var setUpSearchBar = function setUpSearchBar() {
       }
     });
 
-    //clear results
     searchResults.removeClass('faded');
     cy.edges().addClass('faded');
     resultsToFade.addClass('faded');
+    if(searchVal == '') {
+      cy.edges().removeClass('faded');
+    }
   });
 };
 
@@ -286,7 +288,7 @@ var updateHoverDivInfo = function updateHoverDivInfo(node) {
   hoverDiv.replaceChild(neighbors, $$('#neighbors', hoverDiv));
 
   var neighborsHeader = document.createElement('h3');
-  neighborsHeader.innerText = 'Neighbors';
+  neighborsHeader.innerText = 'First Neighbors';
 
   neighbors.appendChild(neighborsHeader);
 
@@ -307,4 +309,72 @@ var hoverController = function hoverController(delay) {
       hoverDiv.classList.add('hide');
     }
   }, 1000);
+};
+
+//LAYOUT CONTROLS
+$$('#upload-layout').addEventListener('click', function uploadAndShowLayout() {
+  cy.off('mouseover','nodes', nodeHoverHandler);
+  $$('#cover-box').classList.remove('hide');
+});
+
+//called by the html on file change
+var changeLayout = function changeLayout() {
+  var upload = $$('input[type=file]')
+  var reader = new FileReader();
+
+  reader.addEventListener('load', function() {
+    var xmlString = reader.result;
+    var nodeArray = x2js.xml_str2json(xmlString).graph.node;
+
+    var newPositions = {};
+    var hiX = 0; 
+    var loX = 0;
+    var hiY = 0; 
+    var loY = 0;
+
+    _.each(nodeArray, function(node) {
+      var x = parseInt(node.graphics._x);
+      var y = parseInt(node.graphics._y);
+
+      hiX = (x > hiX)? x : hiX;
+      loX = (x < loX)? x : loX;
+      hiY = (y > hiY)? y : hiY;
+      loY = (y < loY)? y : loY;
+
+      newPositions[node._label.toLowerCase()] = {x:x, y:y}
+    });
+
+    var rangeX = Math.abs(loX)+Math.abs(hiX);
+    var rangeY = Math.abs(loY)+Math.abs(hiY);
+
+    _.each(newPositions, function(pos) {
+      pos.x -= loX; //lo's => 0
+      pos.y -= loY;
+
+      //hi's are now the range
+      pos.x /= rangeX; //creates a decimal that i can use
+      pos.y /= rangeY;
+    });
+
+    layout(newPositions); //re-render nodes
+    $$('#cover-box').classList.add('hide');
+    cy.on('mouseover','nodes', nodeHoverHandler);
+  });
+
+  reader.readAsText(upload.files[0]);
+};
+
+//close cover
+$$('#close-coverBox').addEventListener('click', function(e) {
+  $$('#cover-box').classList.add('hide');
+});
+
+var layout = function layout(data) {
+  var screenW = 0.9*innerWidth; 
+  var screenH = 0.65*innerHeight;
+  _.each(data, function(pos, id) {
+    cy.filter("node[id='"+id+"']")
+      .position('x',pos.x*screenW)
+      .position('y', pos.y*screenH)
+  });
 };

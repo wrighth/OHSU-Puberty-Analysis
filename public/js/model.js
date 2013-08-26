@@ -1,3 +1,5 @@
+var x2js = new X2JS();
+
 //Core Styling Functionality
 var Core = function Core() {
   this.nodeShapeMap = {
@@ -64,7 +66,7 @@ Core.prototype.getNewColors = function(timePoint) {
         alert('no colors to change to');
       _.each(cy.nodes(), function(node) {
         node.css('background-color', newColorData[node.id()]);
-        console.log('set '+node.id()+' to '+newColorData[node.id()]);
+        //console.log('set '+node.id()+' to '+newColorData[node.id()]);
       });
     });  
 

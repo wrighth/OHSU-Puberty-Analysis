@@ -36,24 +36,31 @@ html(lang="en")
 
         #layoutControls.control 
             h4 Custom Layouts
-            div.layoutControl Save
-            div.layoutControl Upload
-            div.layoutControl All Layouts
+            div.layoutControl#upload-layout Upload
+
+    //- shows up for instructions, uploading etc
+    #cover-box.hide
+        #close-coverBox X
+        #intro
+        #layout-input
+            label File:
+            input(name='upload', type='file', onchange="changeLayout()")
 
     #hoverDiv.hide 
-        #close X
+        #close-hoverDiv X
         h3 Node Information: 
         p#nodeType
         p#ncbi NCBI Links
         p#ourNotes This is our notes on this gene!
         p#blurb This is a blurb about the gene.
         ul#neighbors
-            h4 Neighbors
+            h4 First Neighbors
     #cy
 
     script(src='/js/libs/async.min.js')
     script(src="/js/libs/cytoscape.min.js")
     script(src="/js/libs/underscore.min.js")
+    script(src='/js/libs/xml2json.js')
     script(src="/js/cyto.js")
     script(src="/js/model.js")
     script(src="/js/dataRequests.js")
