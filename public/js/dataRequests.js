@@ -74,7 +74,6 @@ var readExpressionData = function readExpressionData(resText) {
       var numTimesToRun = (pts.length -1 <= timePointsList.length)? pts.length : timePointsList.length +1;
       for(var i = 1; i < numTimesToRun; i++) {
         var currentTimePoint = timePointsList[i-1].symbol;
-        console.log(currentTimePoint);
 
         //check if the key is wanted
         if(timePointMap[currentTimePoint]) {

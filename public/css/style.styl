@@ -125,12 +125,12 @@ input
   padding 20px
   top 0
   left 0
-  z-index 9999 //OVER 9000!!! But makes sure that this isn't covered up
+  z-index 8000
 
 .hide
   display none
 
-#close
+#close-hoverDiv, #close-coverBox
   width 20px
   height 20px
   background-color red
@@ -141,4 +141,28 @@ input
   cursor pointer
   text-align center
   line-height 19px //auto vertical centering
+
+//INTRO BOX
+#cover-box
+  background-color black
+  position fixed
+  height 100vh
+  width 100vw
+  z-index 9000
+
+  *
+    z-index 9001
+
+#layout-input
+  height 500px
+  width 50%
+  background-color white
+  position absolute
+  left 25%
+  top 50px
+
+    *
+      z-index 9002
+
+
   

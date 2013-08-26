@@ -1,3 +1,5 @@
+var x2js = new X2JS();
+
 //Core Styling Functionality
 var Core = function Core() {
   this.nodeShapeMap = {
