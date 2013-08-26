@@ -153,7 +153,6 @@ var readNetworkData = function readNetworkData(networkInfo, rMap, eData) {
     cytoLinks.push(new CytoLink(startNodeId, endNodeId, lineInfo.linkType));
   });
 
-  console.log('created cytoLinks');
     _.each(nodesObj, function(cytoNode) {
       cytoNodes.push(cytoNode);
     });
@@ -205,7 +204,6 @@ async.waterfall([
     }, 'text')
 
     .done(function() {
-      console.log('rgdMap ready');
       rgdMap = rMap;    //set rgdMap to the map
 
       callback(null, networkInfo, rMap);
@@ -221,7 +219,6 @@ async.waterfall([
     }, 'text')
 
     .done(function() {
-      console.log('read expressions successfully');
       callback(null, networkInfo, rMap, eData);
     });
   },
