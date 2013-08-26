@@ -227,7 +227,7 @@ var setUpHoverLogic = function setUpHoverLogic() {
     hoverController(2000);
   });
 
-  $$('#close').addEventListener('click', function(e) {
+  $$('#close-hoverDiv').addEventListener('click', function(e) {
     hoverDiv.classList.add('hide');
   });
 };
@@ -312,7 +312,7 @@ var hoverController = function hoverController(delay) {
 
 //LAYOUT CONTROLS
 $$('#upload-layout').addEventListener('click', function uploadAndShowLayout() {
-  cy.off('mouseover','nodes', nodeHoverHandler);
+  cy.off('mouseover','node', nodeHoverHandler);
   $$('#cover-box').classList.remove('hide');
 });
 
@@ -357,7 +357,7 @@ var changeLayout = function changeLayout() {
 
     layout(newPositions); //re-render nodes
     $$('#cover-box').classList.add('hide');
-    cy.on('mouseover','nodes', nodeHoverHandler);
+    cy.on('mouseover','node', nodeHoverHandler);
   });
 
   reader.readAsText(upload.files[0]);
@@ -366,6 +366,7 @@ var changeLayout = function changeLayout() {
 //close cover
 $$('#close-coverBox').addEventListener('click', function(e) {
   $$('#cover-box').classList.add('hide');
+  cy.on('mouseover','node', nodeHoverHandler);
 });
 
 var layout = function layout(data) {
