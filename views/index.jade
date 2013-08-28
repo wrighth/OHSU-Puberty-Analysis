@@ -1,10 +1,3 @@
-//-for zooming
-mixin zoom
-    .zoom.control 
-        h4 Zoom Controls
-        button#zoomIn   +  
-        button#zoomOut   -  
-
 doctype html
 html(lang="en")
   head
@@ -22,17 +15,6 @@ html(lang="en")
     #controls
         #timePoints.control 
             h4 Choose a Time Point
-
-        mixin zoom
-
-        #expControls.control 
-            h4 Value Controls
-            input#expMax(placeholder="Set Max")
-            input#expMin(placeholder="Set Min")
-            input#midPointControl(placeholder="Set New Center Point")
-        //choose the range of expression values to see
-
-        #expGradient
 
         #layoutControls.control 
             h4 Custom Layouts
