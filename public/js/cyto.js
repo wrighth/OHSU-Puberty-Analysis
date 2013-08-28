@@ -175,6 +175,7 @@ var renderTimeButtons = function renderTimeButtons() {
     timePoints.appendChild(newTimePointBtn);
   });    
 
+  //adds timeSelect to the first one
   $$('.timePoint', timePointsBox).classList.add('timeSelect');
 
   //interactive styling for timepoint buttons
