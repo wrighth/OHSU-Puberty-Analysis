@@ -291,7 +291,14 @@ var updateHoverDivInfo = function updateHoverDivInfo(node) {
 
   neighbors.appendChild(neighborsHeader);
 
-  _.each(node.neighborhood('node'), function(neighborNode) {
+  //limit displayed neighbors to 5 and show high connections
+  var neighborList = _.sortBy(node.neighborhood('node'), function(node) {
+    return node.neighborhood('node').length; //sort by num of attached nodes
+  });
+
+  neighborList = neighborList.slice(0,5);
+
+  _.each(neighborList, function(neighborNode) {
     var neighbor = document.createElement('li');
     neighbor.innerText = neighborNode.id();
     neighbors.appendChild(neighbor);
@@ -320,14 +327,11 @@ var updateHoverDivInfo = function updateHoverDivInfo(node) {
   _.each(graphVals, function(val, symbol) {
     var decimalSplit = (val.toString()).split('.');
 
-    console.log(symbol,val);
     val -= min; //min becomes 0, max becomes range
 
     var height = 180;
     var bar = document.createElement('div');
     bar.classList.add('graph-bar');
-
-    console.log(symbol+' new',val);
 
     bar.style['min-height'] = height*(val/range) + 'px';
     bar.style['max-height'] = height*(val/range) + 'px';
