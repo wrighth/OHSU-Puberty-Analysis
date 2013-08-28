@@ -296,6 +296,54 @@ var updateHoverDivInfo = function updateHoverDivInfo(node) {
     neighbor.innerText = neighborNode.id();
     neighbors.appendChild(neighbor);
   });
+
+  //graph
+  var graphVals = {};
+  var max = -Infinity;
+  var min = Infinity;
+
+  _.each(timePointMap, function(tp) {
+    graphVals[tp.symbol] = tp.data[node.id()];
+    min = (tp.data[node.id()] < min)? tp.data[node.id()]: min;
+    max = (tp.data[node.id()] > max)? tp.data[node.id()]: max;
+  });
+
+  var range = max - min;
+
+  $$('#bars').innerHTML = '';
+  $$('#values').innerText = '';
+
+  var containerWidth = 200 - 10;
+  var barWidth = (containerWidth/Object.keys(graphVals).length)-15;
+  //5px padding on each one
+
+  _.each(graphVals, function(val, symbol) {
+    var decimalSplit = (val.toString()).split('.');
+
+    console.log(symbol,val);
+    val -= min; //min becomes 0, max becomes range
+
+    var height = 180;
+    var bar = document.createElement('div');
+    bar.classList.add('graph-bar');
+
+    console.log(symbol+' new',val);
+
+    bar.style['min-height'] = height*(val/range) + 'px';
+    bar.style['max-height'] = height*(val/range) + 'px';
+    bar.style.width = barWidth + 'px';
+    var p = document.createElement('p');
+
+    if(decimalSplit[1])
+      var printVal = decimalSplit[0]+"."+(decimalSplit[1]).slice(0,2)
+    else
+      var printVal = decimalSplit[0];
+
+    p.innerText = symbol+': \n'+printVal.slice(0,5)+'\n'+printVal.slice(5);
+
+    $$('#bars').appendChild(bar);
+    $$('#values').appendChild(p);
+  });
 };
 
 var hoverController = function hoverController(delay) {
