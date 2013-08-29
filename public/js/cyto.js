@@ -431,3 +431,30 @@ var layout = function layout(data) {
       .position('y', pos.y*screenH)
   });
 };
+
+//select by type
+
+$$('#typeFilter').onchange = function(e) {
+  console.log(e.target, e.target.value);
+  var select = e.target;
+
+  var type = select.value.split(',')[0];
+  var objType = select.value.split(',')[1];
+
+  cy.elements().removeClass('faded');
+
+  switch(type) {
+    case 'node':
+      cy.$("node[type != '"+objType+"']").addClass('faded');
+      cy.edges().addClass('faded');
+    break;
+    case 'link':
+      cy.$("edge[type != '"+objType+"']").addClass('faded');
+      cy.nodes().addClass('faded');
+      _.each(cy.$("edge[type = '"+objType+"']"), function(edge) {
+        edge.source().removeClass('faded');
+        edge.target().removeClass('faded');
+      });
+    break;
+  }
+};

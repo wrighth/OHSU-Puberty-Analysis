@@ -1,3 +1,7 @@
+- var node_info = {gene: 'circle', mirna: 'hexagon', stimulatory: 'triangle',inhibitory: 'rectangle'};
+- var link_info = {pathway: 'red', 'shared-protein-domains': 'blue', coexpression: 'purple', 'genetic-interactions': 'green', 'protein-protein-interactions': 'orange', 'predicted-protein-interactions': 'orange', colocalization: 'black', 'protein-dna': 'indigo', 'mirna-rna': 'indigo', 'regulatory': 'yellow'};
+
+
 doctype html
 html(lang="en")
   head
@@ -19,6 +23,14 @@ html(lang="en")
         #layoutControls.control 
             h4 Custom Layouts
             div.layoutControl#upload-layout Upload
+
+        select#typeFilter
+            option(value='none') Filter By Type
+            each shape, node_type in node_info
+                option(value="node,#{node_type}") #{node_type} : #{shape}
+            option(value='none') --- Links ----
+            each color, link_type in link_info
+                option(value="link,#{link_type}") #{link_type} : #{color}
 
     //- shows up for instructions, uploading etc
     #cover-box.hide
