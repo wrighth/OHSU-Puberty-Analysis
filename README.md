@@ -19,7 +19,8 @@ next few lines
 ex. ej_Early Juvenile_info
 
 rest of the document (majority)
-[rgdSymbol]_[value1]_[value2]_[value3]...
+[rgdSymbol]_[node type]_[value1]_[value2]_[value3]...
+ex. A2M_GENE_123_456_789...
 
 
 Features to Add

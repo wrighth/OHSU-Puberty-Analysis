@@ -21,7 +21,8 @@ var Core = function Core() {
     'regulatory': 'yellow'
   };
   this.linkStyleMap = {
-    'predicted-protein-interactions': 'dashed'
+    'predicted-protein-interactions': '1px',
+    'mirna-rna': '1px'
   };
   this.currentTimePoint;
 };
@@ -34,7 +35,7 @@ Core.prototype.getLinkColor = function getLinkColor(link) {
   return this.linkColorMap[link.data.type] || 'black';
 };
 
-Core.prototype.getLinkWeightRatio = function getLinkWeight(link) {
+Core.prototype.getLinkWidth = function getLinkWidth(link) {
   return this.linkStyleMap[link.data.type];    //default weight
 };
 
@@ -145,7 +146,7 @@ var CytoNode = function CytoNode(id, nodeInfo, expression, type) {
 
 var CytoLink = function CytoLink(startNodeId, endNodeId, linkType) {
 
-  var linkWeight = 1;
+  var linkWidth = 1;
 
   var classList = [linkType];
 
@@ -156,7 +157,7 @@ var CytoLink = function CytoLink(startNodeId, endNodeId, linkType) {
     target : endNodeId
   };
   this.data.style_line_color = core.getLinkColor(this);
-  this.data.style_line_weight = (core.getLinkWeightRatio(this))? core.getLinkWeightRatio*linkWeight : linkWeight;
+  this.data.style_line_width = core.getLinkWidth(this) || '3px';
 };
 
 /*********************************\

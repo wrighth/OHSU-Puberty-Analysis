@@ -77,7 +77,7 @@ var renderCyto = function renderCyto(cytoVar) {
           'target-arrow-shape': 'none',
           'line-style': 'solid',
           'line-color': 'data(style_line_color)',
-          'line-style': 'data(style_line_style)'
+          'width': 'data(style_line_width)'
         })
       .selector(':selected')
         .css({

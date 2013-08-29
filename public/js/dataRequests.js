@@ -5,8 +5,8 @@ var _Split = '_';
 var URL = 'http://spock.csee.ogi.edu:8080/';
 var urlObj = {
   rgdData: URL + 'resources/rgd',
-  networkData: URL + 'data/basakData.sif',
-  expressionData: URL + 'data/test_levels.txt',
+  networkData: URL + 'data/link_type_test.txt',
+  expressionData: URL + 'data/gene_type_test.txt',
   colorData: URL + 'resources/color'
 }
 
@@ -30,6 +30,10 @@ var readExpressionData = function readExpressionData(resText) {
   var numElems = data.length;
   var eData = {};
   var timePointsList = [];
+
+  //if there is an empty string after an extra new line at the end, pop it
+  if(data[data.length-1] == "")
+    data.pop();
 
   //put all of the wanted times as keys in the map
   _.each(timesToGet, function(timePoint) {
@@ -66,14 +70,17 @@ var readExpressionData = function readExpressionData(resText) {
     }
     //for all values
     else {
+      console.log(pts);
       var currentRgdKey = pts[0].toLowerCase();
+      var nodeType = pts[1].toLowerCase();
       //fill eData w/ objects
       eData[currentRgdKey] = {};
 
+      //the 2's are to account for the format in which the key comes first, then the node type
       //if there are more values than timePoints, then ignore the extra value
-      var numTimesToRun = (pts.length -1 <= timePointsList.length)? pts.length : timePointsList.length +1;
-      for(var i = 1; i < numTimesToRun; i++) {
-        var currentTimePoint = timePointsList[i-1].symbol;
+      var numTimesToRun = (pts.length -2 <= timePointsList.length)? pts.length : timePointsList.length +2;
+      for(var i = 2; i < numTimesToRun; i++) {
+        var currentTimePoint = timePointsList[i-2].symbol;
 
         //check if the key is wanted
         if(timePointMap[currentTimePoint]) {
@@ -83,6 +90,7 @@ var readExpressionData = function readExpressionData(resText) {
           valList[currentTimePoint].push(pts[i]);
           //fill objects in eData object with values
           eData[currentRgdKey][currentTimePoint] = pts[i];
+          eData[currentRgdKey]['nodeType'] = nodeType;
           //fill mean object
           mean[currentTimePoint] += pts[i];
         }
@@ -142,11 +150,11 @@ var readNetworkData = function readNetworkData(networkInfo, rMap, eData) {
     var endNodeInfo = rMap[endNodeId];
 
     if(eData[startNodeId]) {
-      var startNode = new CytoNode(startNodeId, startNodeInfo, eData[startNodeId] , 'gene');
+      var startNode = new CytoNode(startNodeId, startNodeInfo, eData[startNodeId] , eData[startNodeId].nodeType);
       nodesObj[startNodeId] = startNode;
     }
     if(eData[endNodeId]) {
-      var endNode = new CytoNode(endNodeId, endNodeInfo, eData[endNodeId], 'gene');
+      var endNode = new CytoNode(endNodeId, endNodeInfo, eData[endNodeId], eData[endNodeId].nodeType);
       nodesObj[endNodeId] = endNode;
     }
     if(eData[startNodeId] && eData[endNodeId])
@@ -167,6 +175,7 @@ var readNetworkData = function readNetworkData(networkInfo, rMap, eData) {
 
 async.waterfall([
   //makes Network request => network array & rgdKeys
+  //this is the edge data
   function getNetworkData(callback) {
     var rgdKeys = [];
     var networkInfo = [];
