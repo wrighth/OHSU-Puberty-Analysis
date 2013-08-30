@@ -22,9 +22,9 @@ html(lang="en")
 
         #layoutControls.control 
             h4 Custom Layouts
-            div.layoutControl#upload-layout Upload
+            .layoutControl#upload-layout Upload
 
-        select#typeFilter
+        select#typeFilter.control
             option(value='none') Filter By Type
             each shape, node_type in node_info
                 option(value="node,#{node_type}") #{node_type} : #{shape}
@@ -32,10 +32,17 @@ html(lang="en")
             each color, link_type in link_info
                 option(value="link,#{link_type}") #{link_type} : #{color}
 
+        #changeNetwork.control
+            h4 Change Network
+            .layoutControl#changeNetworkBtn Change Network
+
     //- shows up for instructions, uploading etc
     #cover-box.hide
         #close-coverBox X
         #intro
+            label Network Name:
+            input(placeholder="input module name")
+            button#initCyto Display
         #layout-input
             label File:
             input(name='upload', type='file', onchange="changeLayout()")

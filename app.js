@@ -69,7 +69,7 @@ app.post('/resources/color', function(req, res) {
     res.json({});
   }
 
-  var writeFileTo = "data/colorVals.txt";
+  var writeFileTo = "devData/colorVals.txt";
   var expInfoString = "";
 
   _.each(expInfo, function(val, rgdKey) {

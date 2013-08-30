@@ -51,7 +51,7 @@ var Human = function Human(humanArr) {
   this.hgncId = humanArr[4];
 };
 
-fs.readFile('/home/hamzah/ohsu/public/data/RGD_ORTHOLOGS.txt', {encoding:'utf-8'}, function(err, file) {
+fs.readFile('/home/hamzah/ohsu/devData/RGD_ORTHOLOGS.txt', {encoding:'utf-8'}, function(err, file) {
   var rgdMap = {};
   var lines = file.split(/\n/);
   var i = 0;
@@ -66,7 +66,7 @@ fs.readFile('/home/hamzah/ohsu/public/data/RGD_ORTHOLOGS.txt', {encoding:'utf-8'
     var key = lineInfo[0];
 
     var rgdInfo = rgdMap[key] = JSON.stringify(new RGD(lineInfo));
-    //cli.set(key, rgdInfo);
+    cli.set(key, rgdInfo);
     
     console.log(key, cli.get(key));
   });

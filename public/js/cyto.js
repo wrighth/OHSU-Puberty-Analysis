@@ -59,7 +59,7 @@ var renderCyto = function renderCyto(cytoVar) {
     style: cytoscape.stylesheet()
       .selector('core')
         .css({
-    'panning-cursor': 'crosshair' //what does this do?
+          'selection-box-opacity': 0//transparent
         })
       .selector('node')
         .css({
@@ -70,7 +70,6 @@ var renderCyto = function renderCyto(cytoVar) {
           'text-outline-color': '#888',
           'background-color': 'data(style_node_color)',
           'shape': 'data(style_node_shape)'
-
         })
       .selector('edge')
         .css({
@@ -98,9 +97,12 @@ var renderCyto = function renderCyto(cytoVar) {
     },
     
     ready: function(){
+      console.log('ran');
+
       window.cy = this;
       cy.elements().unselectify();
-      core.getNewColors('ej'); //gets initial colors
+      //gets first in list of symbols
+      core.getNewColors(timePointMap[Object.keys(timePointMap)[0]].symbol); //gets initial colors
 
       //click and touch events
       cy.on('tap', 'node', function(e){
@@ -184,7 +186,6 @@ var renderTimeButtons = function renderTimeButtons() {
   _.each(btns, function(btn) {
     btn.addEventListener('click', function(event) {
       var target = event.target;
-      //var expInfo = target.dataset.time;
 
       if(!target.classList.contains('timeSelect')) {
 
@@ -458,3 +459,11 @@ $$('#typeFilter').onchange = function(e) {
     break;
   }
 };
+
+$$('#changeNetworkBtn').addEventListener('click', function() {
+  document.location.reload(true);
+
+  $$('#cover-box').classList.remove('hide');
+  $$('#cover-box #intro').classList.remove('hide');
+  $$('#cover-box #layout-input').classList.add('hide');
+});
