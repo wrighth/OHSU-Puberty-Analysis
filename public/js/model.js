@@ -1,3 +1,4 @@
+//xml to json
 var x2js = new X2JS();
 
 //Core Styling Functionality
@@ -39,11 +40,6 @@ Core.prototype.getLinkWidth = function getLinkWidth(link) {
   return this.linkStyleMap[link.data.type];    //default weight
 };
 
-Core.prototype.getInitialNodeColor = function getNodeColor(node) {
-  this.currentTimePoint = 'ej';
-  return processExpression(node.data.expression.ej, 'ej');
-};
-
 //for use after initial color call
 //gets all new colors
 Core.prototype.getNewColors = function(timePoint) {
@@ -73,31 +69,6 @@ Core.prototype.getNewColors = function(timePoint) {
 };
 
 var core = new Core();
-
-/*********************************\
-         Color Management
-\*********************************/
-//THIS IS NOW TAKEN CARE OF BY R - may delete
-
-var processExpression = function processExpression(val, timePoint) {
-  var decimal = (val - expStats.min[timePoint])/(expStats.max[timePoint] - expStats.min[timePoint]);
-
-  return randColor(decimal);
-};
-
-var randColor = function randColor(decimal) {
-  var buffer = decimal - 0.5;
-
-  var green = (buffer >= 0)? 255*Math.abs(buffer) : 0;
-  var red = (buffer >= 0)? 0 : 255*Math.abs(buffer);
-
-  return rgbToHex(red,green,0); //returns something between red and green
-};
-
-//converts RGB to hexadecimal
-var rgbToHex = function rgbToHex(r, g, b) {
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
 
 /*********************************\
          Helper Functions
