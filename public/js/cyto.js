@@ -59,7 +59,7 @@ var renderCyto = function renderCyto(cytoVar) {
     style: cytoscape.stylesheet()
       .selector('core')
         .css({
-    'panning-cursor': 'crosshair' //what does this do?
+          'selection-box-opacity': 0//transparent
         })
       .selector('node')
         .css({
@@ -70,14 +70,13 @@ var renderCyto = function renderCyto(cytoVar) {
           'text-outline-color': '#888',
           'background-color': 'data(style_node_color)',
           'shape': 'data(style_node_shape)'
-
         })
       .selector('edge')
         .css({
           'target-arrow-shape': 'none',
           'line-style': 'solid',
           'line-color': 'data(style_line_color)',
-          'line-style': 'data(style_line_style)'
+          'width': 'data(style_line_width)'
         })
       .selector(':selected')
         .css({
@@ -98,9 +97,12 @@ var renderCyto = function renderCyto(cytoVar) {
     },
     
     ready: function(){
+      console.log('ran');
+
       window.cy = this;
       cy.elements().unselectify();
-      core.getNewColors('ej'); //gets initial colors
+      //gets first in list of symbols
+      core.getNewColors(timePointMap[Object.keys(timePointMap)[0]].symbol); //gets initial colors
 
       //click and touch events
       cy.on('tap', 'node', function(e){
@@ -175,6 +177,7 @@ var renderTimeButtons = function renderTimeButtons() {
     timePoints.appendChild(newTimePointBtn);
   });    
 
+  //adds timeSelect to the first one
   $$('.timePoint', timePointsBox).classList.add('timeSelect');
 
   //interactive styling for timepoint buttons
@@ -183,7 +186,6 @@ var renderTimeButtons = function renderTimeButtons() {
   _.each(btns, function(btn) {
     btn.addEventListener('click', function(event) {
       var target = event.target;
-      //var expInfo = target.dataset.time;
 
       if(!target.classList.contains('timeSelect')) {
 
@@ -291,10 +293,62 @@ var updateHoverDivInfo = function updateHoverDivInfo(node) {
 
   neighbors.appendChild(neighborsHeader);
 
-  _.each(node.neighborhood('node'), function(neighborNode) {
+  //limit displayed neighbors to 5 and show high connections
+  var neighborList = _.sortBy(node.neighborhood('node'), function(node) {
+    return node.neighborhood('node').length; //sort by num of attached nodes
+  });
+
+  neighborList = neighborList.slice(0,5);
+
+  _.each(neighborList, function(neighborNode) {
     var neighbor = document.createElement('li');
     neighbor.innerText = neighborNode.id();
     neighbors.appendChild(neighbor);
+  });
+
+  //graph
+  var graphVals = {};
+  var max = -Infinity;
+  var min = Infinity;
+
+  _.each(timePointMap, function(tp) {
+    graphVals[tp.symbol] = tp.data[node.id()];
+    min = (tp.data[node.id()] < min)? tp.data[node.id()]: min;
+    max = (tp.data[node.id()] > max)? tp.data[node.id()]: max;
+  });
+
+  var range = max - min;
+
+  $$('#bars').innerHTML = '';
+  $$('#values').innerText = '';
+
+  var containerWidth = 200 - 10;
+  var barWidth = (containerWidth/Object.keys(graphVals).length)-15;
+  //5px padding on each one
+
+  _.each(graphVals, function(val, symbol) {
+    var decimalSplit = (val.toString()).split('.');
+
+    val -= min; //min becomes 0, max becomes range
+
+    var height = 180;
+    var bar = document.createElement('div');
+    bar.classList.add('graph-bar');
+
+    bar.style['min-height'] = height*(val/range) + 'px';
+    bar.style['max-height'] = height*(val/range) + 'px';
+    bar.style.width = barWidth + 'px';
+    var p = document.createElement('p');
+
+    if(decimalSplit[1])
+      var printVal = decimalSplit[0]+"."+(decimalSplit[1]).slice(0,2)
+    else
+      var printVal = decimalSplit[0];
+
+    p.innerText = symbol+': \n'+printVal.slice(0,5)+'\n'+printVal.slice(5);
+
+    $$('#bars').appendChild(bar);
+    $$('#values').appendChild(p);
   });
 };
 
@@ -378,3 +432,38 @@ var layout = function layout(data) {
       .position('y', pos.y*screenH)
   });
 };
+
+//select by type
+
+$$('#typeFilter').onchange = function(e) {
+  console.log(e.target, e.target.value);
+  var select = e.target;
+
+  var type = select.value.split(',')[0];
+  var objType = select.value.split(',')[1];
+
+  cy.elements().removeClass('faded');
+
+  switch(type) {
+    case 'node':
+      cy.$("node[type != '"+objType+"']").addClass('faded');
+      cy.edges().addClass('faded');
+    break;
+    case 'link':
+      cy.$("edge[type != '"+objType+"']").addClass('faded');
+      cy.nodes().addClass('faded');
+      _.each(cy.$("edge[type = '"+objType+"']"), function(edge) {
+        edge.source().removeClass('faded');
+        edge.target().removeClass('faded');
+      });
+    break;
+  }
+};
+
+$$('#changeNetworkBtn').addEventListener('click', function() {
+  document.location.reload(true);
+
+  $$('#cover-box').classList.remove('hide');
+  $$('#cover-box #intro').classList.remove('hide');
+  $$('#cover-box #layout-input').classList.add('hide');
+});
